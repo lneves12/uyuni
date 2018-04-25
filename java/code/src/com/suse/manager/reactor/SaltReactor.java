@@ -44,6 +44,7 @@ import com.suse.manager.webui.utils.salt.ImageDeployedEvent;
 import com.suse.manager.webui.utils.salt.custom.VirtpollerData;
 import com.suse.salt.netapi.datatypes.Event;
 import com.suse.salt.netapi.event.BeaconEvent;
+import com.suse.salt.netapi.event.EngineEvent;
 import com.suse.salt.netapi.event.EventListener;
 import com.suse.salt.netapi.event.EventStream;
 import com.suse.salt.netapi.event.JobReturnEvent;
@@ -199,9 +200,10 @@ public class SaltReactor implements EventListener {
         Runnable runnable =
                 MinionStartEvent.parse(event).map(this::onMinionStartEvent).orElseGet(() ->
                 JobReturnEvent.parse(event).map(this::onJobReturnEvent).orElseGet(() ->
+                EngineEvent.parse(event).map(this::onEngineEvent).orElseGet(() ->
                 BeaconEvent.parse(event).map(this::onBeaconEvent).orElseGet(() ->
                 SystemIdGenerateEvent.parse(event).map(this::onSystemIdGenerateEvent).orElseGet(() ->
-                ImageDeployedEvent.parse(event).map(this::onImageDeployed).orElse(() -> { })))));
+                ImageDeployedEvent.parse(event).map(this::onImageDeployed).orElse(() -> { }))))));
         executorService.submit(runnable);
     }
 
@@ -287,6 +289,17 @@ public class SaltReactor implements EventListener {
             MessageQueue.publish(
                 new SystemIdGenerateEventMessage((String) systemIdGenerateEvent.getData().get("id"))
             );
+        };
+    }
+
+    /**
+     * Trigger handling of engine events
+     *
+     * @param engineEvent engine event
+     * @return event handler runnable
+     */
+    private Runnable onEngineEvent(EngineEvent engineEvent) {
+        return () -> {
         };
     }
 
