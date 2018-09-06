@@ -2,7 +2,14 @@
 
 script(type='text/javascript').
     const csrfToken = "#{csrf_token}";
-    const urlBounce = "#{url_bounce}";
 
 script(src='/javascript/susemanager-login.js', type='text/javascript')
-script(src='/javascript/manager/login.bundle.js', type='text/javascript')
+script(src='/javascript/manager/login/login.renderer.bundle.js', type='text/javascript')
+
+script(type='text/javascript').
+    pageRenderers.login.loginRenderer(
+        'login',
+        {
+            urlBounce: "#{url_bounce}"
+        }
+    );
