@@ -237,6 +237,7 @@ public class VirtualGuestsController {
         actionsMap.put("setMemory", VirtualGuestSetterActionJson.class);
         actionsMap.put("delete", VirtualGuestsBaseActionJson.class);
         actionsMap.put("update", VirtualGuestsUpdateActionJson.class);
+        actionsMap.put("new", VirtualGuestsUpdateActionJson.class);
 
         Long serverId;
         try {
@@ -266,24 +267,30 @@ public class VirtualGuestsController {
                 SystemManager.virtualGuestsForHostList(user, serverId, null);
 
         HashMap<String, String> actionResults = new HashMap<>();
-        for (VirtualSystemOverview guest : guests) {
-            ActionType type = VirtualizationActionCommand.lookupActionType(guest.getStateLabel(), action);
-            if (data.getUuids().contains(guest.getUuid())) {
-                String result = null;
-                if (data instanceof VirtualGuestsUpdateActionJson) {
-                    result = triggerGuestUpdateAction(host, guest, user, (VirtualGuestsUpdateActionJson)data);
-                }
-                else if (type != null) {
-                    if (data instanceof VirtualGuestSetterActionJson) {
-                        result = triggerGuestSetterAction(host, guest, action, type, user,
-                                                          ((VirtualGuestSetterActionJson)data).getValue());
+        if (data.getUuids() == null || data.getUuids().isEmpty()) {
+            String result = triggerGuestUpdateSaltAction(host, null, user, (VirtualGuestsUpdateActionJson)data);
+            actionResults.put("create-guest", result != null ? result : "Failed");
+        }
+        else {
+            for (VirtualSystemOverview guest : guests) {
+                ActionType type = VirtualizationActionCommand.lookupActionType(guest.getStateLabel(), action);
+                if (data.getUuids().contains(guest.getUuid())) {
+                    String result = null;
+                    if (data instanceof VirtualGuestsUpdateActionJson) {
+                        result = triggerGuestUpdateAction(host, guest, user, (VirtualGuestsUpdateActionJson)data);
                     }
-                    else {
-                        result = triggerGuestAction(host, guest, type, user, new HashMap<>());
+                    else if (type != null) {
+                        if (data instanceof VirtualGuestSetterActionJson) {
+                            result = triggerGuestSetterAction(host, guest, action, type, user,
+                                                              ((VirtualGuestSetterActionJson)data).getValue());
+                        }
+                        else {
+                            result = triggerGuestAction(host, guest, type, user, new HashMap<>());
+                        }
                     }
+                    String status = result != null ? result : "Failed";
+                    actionResults.put(guest.getUuid(), status);
                 }
-                String status = result != null ? result : "Failed";
-                actionResults.put(guest.getUuid(), status);
             }
         }
 
@@ -339,12 +346,45 @@ public class VirtualGuestsController {
         return new ModelAndView(data, "virtualization/guests/edit.jade");
     }
 
+    /**
+     * Display the New Virtual Guest page
+     *
+     * @param request the request
+     * @param response the response
+     * @param user the user
+     * @return the ModelAndView object to render the page
+     */
+    public static ModelAndView create(Request request, Response response, User user) {
+        Map<String, Object> data = new HashMap<>();
+
+        Long hostId = Long.parseLong(request.params("sid"));
+        Server host = SystemManager.lookupByIdAndUser(hostId, user);
+
+        if (!host.hasEntitlement(EntitlementManager.SALT)) {
+            Spark.halt(HttpStatus.SC_BAD_REQUEST, "Only for Salt-managed virtual hosts");
+        }
+
+        /* For system-common.jade */
+        data.put("server", host);
+        data.put("inSSM", RhnSetDecl.SYSTEMS.get(user).contains(hostId));
+
+        /* For the rest of the template */
+        data.put("isSalt", host.hasEntitlement(EntitlementManager.SALT));
+
+        return new ModelAndView(data, "virtualization/guests/create.jade");
+    }
+
     private static String triggerGuestUpdateAction(Server host,
                                                    VirtualSystemOverview guest,
                                                    User user,
                                                    VirtualGuestsUpdateActionJson data) {
         if (host.asMinionServer().isPresent()) {
             return triggerGuestUpdateSaltAction(host, guest, user, data);
+        }
+
+        if (data.getUuids().isEmpty()) {
+            log.error("Creating a virtual machine is only possible for salt minions not for " + host.getHostname());
+            return null;
         }
 
         List<String> results = new ArrayList<>();
