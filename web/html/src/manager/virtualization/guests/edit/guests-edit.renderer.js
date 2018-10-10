@@ -5,10 +5,10 @@ const { GuestsEdit } = require('./guests-edit');
 window.pageRenderers = window.pageRenderers || {};
 window.pageRenderers.guests = window.pageRenderers.guests || {};
 window.pageRenderers.guests.edit = window.pageRenderers.guests.edit || {};
-window.pageRenderers.guests.edit.guestsEditRenderer = (id, { host, guest }) => {
+window.pageRenderers.guests.edit.guestsEditRenderer = (id, { host, guestUuid }) => {
   const guestEditProps = {
     host,
-    guest,
+    guestUuid,
   };
 
   renderWithHotReload(GuestsEdit, guestEditProps, id);
