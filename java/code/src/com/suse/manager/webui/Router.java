@@ -34,6 +34,7 @@ import com.suse.manager.webui.controllers.SystemsController;
 import com.suse.manager.webui.controllers.TaskoTop;
 import com.suse.manager.webui.controllers.VirtualGuestsController;
 import com.suse.manager.webui.controllers.VirtualHostManagerController;
+import com.suse.manager.webui.controllers.VirtualNetsController;
 import com.suse.manager.webui.controllers.VisualizationController;
 import com.suse.manager.webui.errors.NotFoundException;
 import java.util.HashMap;
@@ -342,6 +343,8 @@ public class Router implements SparkApplication {
                 withUser(VirtualGuestsController::getGuest));
         get("/manager/api/systems/details/virtualization/guests/:sid/domains_capabilities",
                 withUser(VirtualGuestsController::getDomainsCapabilities));
+        get("/manager/api/systems/details/virtualization/nets/:sid/data",
+                withUser(VirtualNetsController::data));
     }
 
     private void initContentManagementRoutes(JadeTemplateEngine jade) {
