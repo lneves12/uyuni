@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Class representing the VM XML Definition.
@@ -42,6 +43,8 @@ public class GuestDefinition {
     private GuestVcpuDef vcpu;
     private GuestOsDef os;
     private GuestGraphicsDef graphics;
+    private List<GuestInterfaceDef> interfaces;
+
 
     /**
      * Create a guest definition from a virtual system overview.
@@ -197,6 +200,20 @@ public class GuestDefinition {
     }
 
     /**
+     * @return Returns the interfaces.
+     */
+    public List<GuestInterfaceDef> getInterfaces() {
+        return interfaces;
+    }
+
+    /**
+     * @param interfacesIn The interfaces to set.
+     */
+    public void setInterfaces(List<GuestInterfaceDef> interfacesIn) {
+        interfaces = interfacesIn;
+    }
+
+    /**
      * Compute the virtual instance type from the VM OS definition.
      *
      * @return the VirtualInstanceType
@@ -216,6 +233,7 @@ public class GuestDefinition {
      * @param xmlDef libvirt XML domain definition
      * @return parsed definition or {@code null}
      */
+    @SuppressWarnings("unchecked")
     public static GuestDefinition parse(String xmlDef) {
         GuestDefinition def = null;
         SAXBuilder builder = new SAXBuilder();
@@ -234,7 +252,12 @@ public class GuestDefinition {
 
             def.vcpu = GuestVcpuDef.parse(domainElement.getChild("vcpu"));
             def.os = GuestOsDef.parse(domainElement.getChild("os"));
-            def.graphics = GuestGraphicsDef.parse(domainElement.getChild("devices").getChild("graphics"));
+
+            Element devices = domainElement.getChild("devices");
+            def.graphics = GuestGraphicsDef.parse(devices.getChild("graphics"));
+
+            def.interfaces = ((List<Element>)devices.getChildren("interface")).stream()
+                    .map(node -> GuestInterfaceDef.parse(node)).collect(Collectors.toList());
         }
         catch (JDOMException e) {
         }
