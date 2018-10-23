@@ -44,6 +44,7 @@ public class GuestDefinition {
     private GuestOsDef os;
     private GuestGraphicsDef graphics;
     private List<GuestInterfaceDef> interfaces;
+    private List<GuestDiskDef> disks;
 
 
     /**
@@ -214,6 +215,20 @@ public class GuestDefinition {
     }
 
     /**
+     * @return Returns the disks.
+     */
+    public List<GuestDiskDef> getDisks() {
+        return disks;
+    }
+
+    /**
+     * @param disksIn The disks to set.
+     */
+    public void setDisks(List<GuestDiskDef> disksIn) {
+        disks = disksIn;
+    }
+
+    /**
      * Compute the virtual instance type from the VM OS definition.
      *
      * @return the VirtualInstanceType
@@ -258,6 +273,8 @@ public class GuestDefinition {
 
             def.interfaces = ((List<Element>)devices.getChildren("interface")).stream()
                     .map(node -> GuestInterfaceDef.parse(node)).collect(Collectors.toList());
+            def.disks = ((List<Element>)devices.getChildren("disk")).stream()
+                    .map(node -> GuestDiskDef.parse(node)).collect(Collectors.toList());
         }
         catch (JDOMException e) {
         }

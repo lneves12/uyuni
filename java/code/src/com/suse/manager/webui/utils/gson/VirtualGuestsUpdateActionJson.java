@@ -14,6 +14,8 @@
  */
 package com.suse.manager.webui.utils.gson;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 /**
@@ -163,9 +165,57 @@ public class VirtualGuestsUpdateActionJson extends VirtualGuestsBaseActionJson {
      * Class describing the JSON disk data
      */
     public class DiskData {
+        private String type;
+        private String device;
         private String template;
+        private long size = 0;
         private String bus;
         private String pool;
+
+        @SerializedName("source_file")
+        private String sourceFile;
+
+        /**
+         * @return Returns the type.
+         */
+        public String getType() {
+            return type;
+        }
+
+        /**
+         * @param typeIn The type to set.
+         */
+        public void setType(String typeIn) {
+            type = typeIn;
+        }
+
+        /**
+         * @return Returns the device.
+         */
+        public String getDevice() {
+            return device;
+        }
+
+        /**
+         * @param deviceIn The device to set.
+         */
+        public void setDevice(String deviceIn) {
+            device = deviceIn;
+        }
+
+        /**
+         * @return Returns the source file.
+         */
+        public String getSourceFile() {
+            return sourceFile;
+        }
+
+        /**
+         * @param sourceFileIn The source_file to set.
+         */
+        public void setSourceFile(String sourceFileIn) {
+            sourceFile = sourceFileIn;
+        }
 
         /**
          * @return the disk image template URI
@@ -179,6 +229,20 @@ public class VirtualGuestsUpdateActionJson extends VirtualGuestsBaseActionJson {
          */
         public void setTemplate(String templateIn) {
             this.template = templateIn;
+        }
+
+        /**
+         * @return Returns the size.
+         */
+        public long getSize() {
+            return size;
+        }
+
+        /**
+         * @param sizeIn The size to set.
+         */
+        public void setSize(long sizeIn) {
+            size = sizeIn;
         }
 
         /**
