@@ -7,6 +7,7 @@ const MessagesUtils = require('components/messages').Utils;
 const { GuestProperties } = require('../guest-properties');
 const GuestPropertiesUtils = require('../properties/guest-properties-utils');
 const GuestNic = require('../properties/guest-nic');
+const GuestDisk = require('../properties/guest-disk');
 const { VirtualizationGuestActionApi } = require('../virtualization-guest-action-api');
 const { VirtualizationGuestDefinitionApi } = require('../virtualization-guest-definition-api');
 
@@ -28,7 +29,8 @@ class GuestsEdit extends React.Component<Props> {
         arch: definition.os.arch,
         vmType: definition.type,
       },
-      GuestNic.getModelFromDefinition(definition));
+      GuestNic.getModelFromDefinition(definition),
+      GuestDisk.getModelFromDefinition(definition));
     }
     return {
       memory: 1024,
@@ -48,10 +50,26 @@ class GuestsEdit extends React.Component<Props> {
 
     const nicsParams = nics.length !== 0 ? { interfaces: nics } : undefined;
 
-    return Object.assign(model, {
-      memory: model.memory * 1024,
+    // Diff the model with the initial one to avoid changing disks if user hasn't touched them.
+    const initialDiskProps = Object.entries(initialModel).filter(entry => entry[0].startsWith('disk'));
+    const newDiskProps = Object.entries(model).filter(entry => entry[0].startsWith('disk'));
+    const disks = !isEqual(initialDiskProps, newDiskProps)
+      ? GuestPropertiesUtils.getOrderedDevicesFromModel(model, 'disk')
+        .map(disk => GuestDisk.getRequestParams(model, disk))
+      : [];
+
+    const disksParams = disks.length !== 0 ? { disks } : undefined;
+
+    return Object.assign(
+      Object.entries(model).reduce((res, entry) => Object.assign(res,
+        !entry[0].startsWith('disk') && !entry[0].startsWith('network') ? { [entry[0]]: entry[1] } : undefined),
+      {}),
+      {
+        memory: model.memory * 1024,
+      },
       nicsParams,
-    });
+      disksParams,
+    );
   }
 
   render() {
@@ -74,6 +92,7 @@ class GuestsEdit extends React.Component<Props> {
                   onAction,
                   messages: actionMessages,
                 }) => {
+                  const initialModel = GuestsEdit.getModelFromDefinition(definition);
                   const onSubmit = properties => onAction('update', [this.props.guestUuid],
                     GuestsEdit.getRequestParameterFromModel(properties, initialModel));
                   const messages = [].concat(definitionMessages, actionMessages)
@@ -87,7 +106,7 @@ class GuestsEdit extends React.Component<Props> {
                         submitText={t('Update')}
                         submit={onSubmit}
                         messages={messages}
-                        initialModel={GuestsEdit.getModelFromDefinition(definition)}
+                        initialModel={initialModel}
                       />
                     </TopPanel>
                   );
