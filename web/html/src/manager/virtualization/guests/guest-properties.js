@@ -48,6 +48,11 @@ class GuestProperties extends React.Component<Props> {
       );
     }
 
+    const osTypesLabels = {
+      hvm: 'Fully Virtualized',
+      xen: 'Para Virtualized',
+    };
+
     return (
       <VirtualizationNetsListRefreshApi serverId={this.props.host.id}>
         {
@@ -64,13 +69,15 @@ class GuestProperties extends React.Component<Props> {
                   <VirtualizationDomainsCapsApi hostId={this.props.host.id}>
                     {
                       ({
+                        osTypes,
                         domainsCaps,
                         messages,
                       }) => {
                         const allMessages = [].concat(this.props.messages, messages, netListError, poolListError)
                           .filter(item => item);
 
-                        if (networks != null && pools != null && domainsCaps.length > 0 && allMessages.length === 0) {
+                        if (networks != null && pools != null && osTypes.length > 0 && domainsCaps.length > 0
+                            && allMessages.length === 0) {
                           return (
                             <GuestPropertiesForm
                               submitText={this.props.submitText}
@@ -91,6 +98,48 @@ class GuestProperties extends React.Component<Props> {
 
                                   return [
                                     <Panel key="general" title={t('General')} headingLevel="h2">
+                                      { this.props.initialModel.name === undefined
+                                        && (
+                                        <Text
+                                          name="name"
+                                          label={t('Name')}
+                                          required
+                                          invalidHint={t('Can not contain the following characters: /\\')}
+                                          labelClass="col-md-3"
+                                          divClass="col-md-6"
+                                          validators={[Validation.matches(/^[^/\\]+$/)]}
+                                        />)
+                                      }
+                                      { this.props.initialModel.vmType === undefined
+                                        && (
+                                        <Select
+                                          labelClass="col-md-3"
+                                          divClass="col-md-6"
+                                          label={t('Hypervisor')}
+                                          name="vmType"
+                                          required
+                                          defaultValue={vmTypes.includes('kvm') ? 'kvm' : vmTypes[0]}
+                                        >
+                                          {
+                                            vmTypes.map(k => <option key={k} value={k}>{k}</option>)
+                                          }
+                                        </Select>)
+                                      }
+                                      { this.props.initialModel.osType === undefined
+                                        && (
+                                        <Select
+                                          labelClass="col-md-3"
+                                          divClass="col-md-6"
+                                          label={t('Virtual Machine Type')}
+                                          name="osType"
+                                          required
+                                          defaultValue={osTypes[0]}
+                                        >
+                                          {
+                                            osTypes.map(k => <option key={k} value={k}>{osTypesLabels[k]}</option>)
+                                          }
+                                        </Select>)
+                                      }
                                       <Text
                                         name="memory"
                                         label={t('Maximum Memory (MiB)')}
@@ -109,6 +158,23 @@ class GuestProperties extends React.Component<Props> {
                                         divClass="col-md-6"
                                         validators={[Validation.isInt({ gt: 0 })]}
                                       />
+                                      { this.props.initialModel.arch === undefined
+                                        && (
+                                        <Select
+                                          labelClass="col-md-3"
+                                          divClass="col-md-6"
+                                          label={t('Architecture')}
+                                          name="arch"
+                                          required
+                                          defaultValue={this.props.host.cpu.arch}
+                                        >
+                                          {
+                                            domainsCaps.map(cap => cap.arch)
+                                              .filter((item, index, array) => array.indexOf(item) === index)
+                                              .map(k => <option key={k} value={k}>{k}</option>)
+                                          }
+                                        </Select>)
+                                      }
                                     </Panel>,
                                     guestDisksPanel(model, changeModel, pools, caps),
                                     guestNicsPanel(model, changeModel, networks),
