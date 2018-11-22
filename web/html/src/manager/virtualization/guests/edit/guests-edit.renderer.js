@@ -16,7 +16,7 @@ window.pageRenderers.guests.edit.guestsEditRenderer = (id, { host, guestUuid }) 
   if (module.hot) {
     module.hot.accept('./guests-edit.js', () => {
       // eslint-disable-next-line
-      const { GuestsList } = require('./guests-edit');
+      const { GuestsEdit } = require('./guests-edit');
       renderWithHotReload(GuestsEdit, guestEditProps, id);
     });
   }
