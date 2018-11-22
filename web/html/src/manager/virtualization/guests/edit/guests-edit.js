@@ -22,6 +22,7 @@ class GuestsEdit extends React.Component<Props> {
   static getModelFromDefinition(definition: ?Object) {
     if (definition != null) {
       return Object.assign({
+        name: definition.name,
         memory: definition.maxMemory / 1024,
         vcpu: definition.vcpu.max,
         graphicsType: definition.graphics ? definition.graphics.type : '',
