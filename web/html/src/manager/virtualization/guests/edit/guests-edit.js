@@ -1,5 +1,7 @@
 // @flow
+/* global module */
 
+const { hot } = require('react-hot-loader');
 const React = require('react');
 const { isEqual } = require('lodash');
 const { TopPanel } = require('components/panels/TopPanel');
@@ -120,5 +122,5 @@ class GuestsEdit extends React.Component<Props> {
 }
 
 module.exports = {
-  GuestsEdit,
+  GuestsEdit: hot(module)(GuestsEdit),
 };
