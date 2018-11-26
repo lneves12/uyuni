@@ -8,6 +8,7 @@ const { VirtualizationGuestActionApi } = require('../virtualization-guest-action
 const GuestPropertiesUtils = require('../properties/guest-properties-utils');
 const GuestNic = require('../properties/guest-nic');
 const GuestDisk = require('../properties/guest-disk');
+const { hot } = require('react-hot-loader');
 
 declare function t(msg: string, ...args: Array<any>): string;
 
@@ -96,5 +97,5 @@ GuestsCreate.propTypes = {
 };
 
 module.exports = {
-  GuestsCreate,
+  GuestsCreate: hot(module)(GuestsCreate),
 };

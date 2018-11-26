@@ -3,7 +3,7 @@
 
 const { hot } = require('react-hot-loader');
 const React = require('react');
-const { isEqual } = require('lodash');
+const _isEqual = require('lodash/isEqual');
 const { TopPanel } = require('components/panels/TopPanel');
 const MessagesUtils = require('components/messages').Utils;
 const { GuestProperties } = require('../guest-properties');
@@ -46,7 +46,7 @@ class GuestsEdit extends React.Component<Props> {
     // Diff the model with the initial one to avoid changing nics if user hasn't touched them.
     const initialNicProps = Object.entries(initialModel).filter(entry => entry[0].startsWith('network'));
     const newNicProps = Object.entries(model).filter(entry => entry[0].startsWith('network'));
-    const nics = !isEqual(initialNicProps, newNicProps)
+    const nics = !_isEqual(initialNicProps, newNicProps)
       ? GuestPropertiesUtils.getOrderedDevicesFromModel(model, 'network')
         .map(nic => GuestNic.getRequestParams(model, nic))
       : [];
@@ -56,7 +56,7 @@ class GuestsEdit extends React.Component<Props> {
     // Diff the model with the initial one to avoid changing disks if user hasn't touched them.
     const initialDiskProps = Object.entries(initialModel).filter(entry => entry[0].startsWith('disk'));
     const newDiskProps = Object.entries(model).filter(entry => entry[0].startsWith('disk'));
-    const disks = !isEqual(initialDiskProps, newDiskProps)
+    const disks = !_isEqual(initialDiskProps, newDiskProps)
       ? GuestPropertiesUtils.getOrderedDevicesFromModel(model, 'disk')
         .map(disk => GuestDisk.getRequestParams(model, disk))
       : [];
