@@ -1,3 +1,18 @@
+/**
+ * Copyright (c) 2019 SUSE LLC
+ *
+ * This software is licensed to you under the GNU General Public License,
+ * version 2 (GPLv2). There is NO WARRANTY for this software, express or
+ * implied, including the implied warranties of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2
+ * along with this software; if not, see
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
+ *
+ * Red Hat trademarks are not licensed under GPLv2. No permission is
+ * granted to use or replicate Red Hat trademarks that are incorporated
+ * in this software or its documentation.
+ */
+
 package com.redhat.rhn.manager.channel.test;
 
 import com.redhat.rhn.common.hibernate.HibernateFactory;
@@ -17,16 +32,22 @@ import com.redhat.rhn.domain.rhnpackage.test.PackageTest;
 import com.redhat.rhn.domain.server.InstalledPackage;
 import com.redhat.rhn.domain.server.Server;
 import com.redhat.rhn.domain.server.test.ServerFactoryTest;
+import com.redhat.rhn.frontend.dto.SystemOverview;
 import com.redhat.rhn.manager.channel.ChannelManager;
 import com.redhat.rhn.manager.contentmgmt.ContentManager;
+import com.redhat.rhn.manager.errata.cache.ErrataCacheManager;
 import com.redhat.rhn.manager.system.SystemManager;
 import com.redhat.rhn.testing.BaseTestCaseWithUser;
 import com.redhat.rhn.testing.ChannelTestUtils;
-import com.redhat.rhn.testing.ServerTestUtils;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static com.redhat.rhn.domain.contentmgmt.ProjectSource.Type.SW_CHANNEL;
 import static com.redhat.rhn.domain.role.RoleFactory.ORG_ADMIN;
 import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static java.util.stream.Collectors.toSet;
 
 /**
@@ -121,22 +142,98 @@ public class ChannelManagerContentAlignmentTest extends BaseTestCaseWithUser {
         Server server = ServerFactoryTest.createTestServer(user);
         // server will have an older package installed -> after the alignment, the rhnServerNeededCache
         // must contain the entry corresponding to the the newer package
-        InstalledPackage olderPack = new InstalledPackage();
-        PackageEvr packageEvr = pkg.getPackageEvr();
-        olderPack.setEvr(PackageEvrFactoryTest.createTestPackageEvr(
-                packageEvr.getEpoch(),
-                "0.9.9",
-                packageEvr.getRelease()
-        ));
-        olderPack.setArch(pkg.getPackageArch());
-        olderPack.setName(pkg.getPackageName());
+        InstalledPackage olderPack = copyPackage(pkg, of("0.9.9"));
         olderPack.setServer(server);
         server.getPackages().add(olderPack);
 
         SystemManager.subscribeServerToChannel(user, server, tgtChan);
-        ServerTestUtils.createTestSystem(user);
 
         ChannelManager.alignChannelsSync(src, tgt, user);
         assertEquals(errata.getId(), SystemManager.relevantErrata(user, server.getId()).get(0).getId());
+    }
+
+    /**
+     * Test that aligning channels with packages and no errata adds the needed package to the cache.
+     *
+     * @throws Exception if anything goes wrong
+     */
+    public void testServerNeededCacheAddedNoErrata() throws Exception {
+        Server server = ServerFactoryTest.createTestServer(user);
+        SystemManager.subscribeServerToChannel(user, server, tgtChan);
+        // we want to test the cache update when channel with no errata is used
+        srcChannel.getErratas().clear();
+
+        InstalledPackage olderPkg = copyPackage(pkg, of("0.9.9"));
+        olderPkg.setServer(server);
+        server.getPackages().add(olderPkg);
+
+        List<SystemOverview> systemsWithNeededPackage = SystemManager.listSystemsWithNeededPackage(user, pkg.getId());
+        assertTrue(systemsWithNeededPackage.isEmpty());
+
+        ChannelManager.alignChannelsSync(src, tgt, user);
+        systemsWithNeededPackage = SystemManager.listSystemsWithNeededPackage(user, pkg.getId());
+        assertEquals(1, systemsWithNeededPackage.size());
+        assertEquals(server.getId(), systemsWithNeededPackage.get(0).getId());
+    }
+
+    /**
+     * Test that aligning channels with no errata removes package from the cache.
+     *
+     * @throws Exception if anything goes wrong
+     */
+    public void testServerNeededCacheRemovedNoErrata() throws Exception {
+        Server server = ServerFactoryTest.createTestServer(user);
+        // we want to test the cache update when channel with no errata is used
+        srcChannel.getErratas().clear();
+
+        Package otherPkg = PackageTest.createTestPackage(user.getOrg());
+        tgtChan.addPackage(otherPkg);
+        SystemManager.subscribeServerToChannel(user, server, tgtChan);
+
+        InstalledPackage olderPkg = copyPackage(otherPkg, of("0.9.9"));
+        olderPkg.setServer(server);
+        server.getPackages().add(olderPkg);
+
+        // we fake the cache entry here
+        ErrataCacheManager.insertCacheForChannelPackages(tgtChan.getId(), null, Collections.singletonList(otherPkg.getId()));
+        List<SystemOverview> systemsWithNeededPackage = SystemManager.listSystemsWithNeededPackage(user, otherPkg.getId());
+        assertEquals(1, systemsWithNeededPackage.size());
+        assertEquals(server.getId(), systemsWithNeededPackage.get(0).getId());
+
+        ChannelManager.alignChannelsSync(src, tgt, user);
+        systemsWithNeededPackage = SystemManager.listSystemsWithNeededPackage(user, otherPkg.getId());
+        assertTrue(systemsWithNeededPackage.isEmpty());
+    }
+
+    /**
+     * Test that aligning a target channel with erratum A to a source channel
+     * that does not have this erratum will remove erratum A from the target.
+     *
+     * @throws Exception if anything goes wrong
+     */
+    public void testErrataRemoved() throws Exception {
+        // this errata is in the target channel and is supposed to be removed after align
+        Errata toRemove = ErrataFactoryTest.createTestPublishedErrata(user.getOrg().getId());;
+        tgtChan.addErrata(toRemove);
+
+        ChannelManager.alignChannelsSync(src, tgt, user);
+
+        // check that packages and errata have been aligned
+        tgtChan = (Channel) HibernateFactory.reload(tgtChan);
+        assertEquals(srcChannel.getPackages(), tgtChan.getPackages());
+        assertEquals(srcChannel.getErratas(), tgtChan.getErratas());
+    }
+
+    private static InstalledPackage copyPackage(Package otherPkg, Optional<String> overrideVersion) {
+        InstalledPackage olderPkg = new InstalledPackage();
+        PackageEvr packageEvr = otherPkg.getPackageEvr();
+        olderPkg.setEvr(PackageEvrFactoryTest.createTestPackageEvr(
+                packageEvr.getEpoch(),
+                overrideVersion.orElse(packageEvr.getVersion()),
+                packageEvr.getRelease()
+        ));
+        olderPkg.setArch(otherPkg.getPackageArch());
+        olderPkg.setName(otherPkg.getPackageName());
+        return olderPkg;
     }
 }

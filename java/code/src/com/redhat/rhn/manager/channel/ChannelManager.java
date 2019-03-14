@@ -47,6 +47,7 @@ import com.redhat.rhn.domain.product.SUSEProduct;
 import com.redhat.rhn.domain.product.SUSEProductChannel;
 import com.redhat.rhn.domain.product.SUSEProductExtension;
 import com.redhat.rhn.domain.product.SUSEProductFactory;
+import com.redhat.rhn.domain.rhnpackage.Package;
 import com.redhat.rhn.domain.rhnpackage.PackageEvr;
 import com.redhat.rhn.domain.role.RoleFactory;
 import com.redhat.rhn.domain.server.MinionServer;
@@ -93,6 +94,7 @@ import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -2771,23 +2773,41 @@ public class ChannelManager extends BaseManager {
         Channel tgtChannel = tgt.getChannel();
         Channel srcChannel = src.getChannel();
 
-        // align packages
-        tgtChannel.getPackages().clear();
-        tgtChannel.getPackages().addAll(srcChannel.getPackages());
+        // align packages and the cache (rhnServerNeededCache)
+        alignPackages(srcChannel, tgtChannel);
+
+        // align errata and the cache (rhnServerNeededCache)
+        ErrataManager.mergeErrataToChannel(user, srcChannel.getErratas(), tgtChannel, srcChannel, false, false);
+        ErrataManager.truncateErrata(srcChannel, tgtChannel, user);
 
         // update the channel newest packages cache
         ChannelFactory.refreshNewestPackageCache(tgtChannel, "java::alignPackages");
-
-        // align errata
-        ErrataManager.mergeErrataToChannel(user, srcChannel.getErratas(), tgtChannel, srcChannel, false, false);
-
-        // update the cache for channel
-        ErrataCacheManager.updateErrataAndPackageCacheForChannel(tgtChannel.getId());
 
         // now request repo regen
         tgtChannel.setLastModified(new Date());
         ChannelFactory.save(tgtChannel);
         ChannelManager.queueChannelChange(tgtChannel.getLabel(), "java::alignChannel", "Channel aligned");
+    }
+
+    private static void alignPackages(Channel srcChannel, Channel tgtChannel) {
+        Set<Package> onlyInTgt = new HashSet<>(tgtChannel.getPackages());
+        onlyInTgt.removeAll(srcChannel.getPackages());
+        Set<Package> onlyInSrc = new HashSet<>(srcChannel.getPackages());
+        onlyInSrc.removeAll(tgtChannel.getPackages());
+
+        // align the packages
+        tgtChannel.getPackages().clear();
+        tgtChannel.getPackages().addAll(srcChannel.getPackages());
+
+        // remove cache entries for only in tgt
+        ErrataCacheManager.deleteCacheEntriesForChannelPackages(tgtChannel.getId(), extractPackageIds(onlyInTgt));
+
+        // add cache entries for new ones
+        ErrataCacheManager.insertCacheForChannelPackages(tgtChannel.getId(), null, extractPackageIds(onlyInSrc));
+    }
+
+    private static List<Long> extractPackageIds(Collection<Package> packages) {
+        return packages.stream().map(p -> p.getId()).collect(Collectors.toList());
     }
 
     /**
