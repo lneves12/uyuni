@@ -1448,7 +1448,7 @@ public class ErrataManager extends BaseManager {
 
 
         //Remove the errata from the channel
-        chan.getErratas().remove(errata);
+        chan.removeErrata(errata);
         List<Long> eList = new ArrayList<Long>();
         eList.add(errata.getId());
         //First delete the cache entries

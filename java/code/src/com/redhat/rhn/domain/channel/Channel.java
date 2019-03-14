@@ -431,6 +431,16 @@ public class Channel extends BaseDomainHelper implements Comparable<Channel> {
      */
     public void addErrata(Errata errataIn) {
         erratas.add(errataIn);
+        errataIn.getChannels().add(this);
+    }
+
+    /**
+     * Removes a single errata to the channel
+     * @param toRemove The errata to remove
+     */
+    public void removeErrata(Errata toRemove) {
+        erratas.remove(toRemove);
+        toRemove.getChannels().remove(this);
     }
 
     /**

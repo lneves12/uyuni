@@ -76,6 +76,14 @@ public class UnpublishedErrata extends AbstractErrata {
     /**
      * {@inheritDoc}
      */
+    @Override
+    public void removeChannel(Channel toRemove) {
+        throw new PublishedOnlyException("Only published erratas can have channels");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void setChannels(Set channelsIn) {
         throw new PublishedOnlyException("Only published erratas can have channels");
     }

@@ -57,6 +57,18 @@ public class PublishedErrata extends AbstractErrata {
             this.channels = new HashSet();
         }
         channels.add(channelIn);
+        channelIn.getErratas().add(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeChannel(Channel toRemove) {
+        if (this.channels == null) {
+            return; // no-op
+        }
+        channels.remove(toRemove);
+        toRemove.getErratas().remove(this);
     }
 
     /**

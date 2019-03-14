@@ -390,6 +390,14 @@ public interface Errata {
     void addChannel(Channel channelIn);
 
     /**
+     *
+     * Removes a single channel to this errata
+     *
+     * @param toRemove The channel to remove
+     */
+    void removeChannel(Channel toRemove);
+
+    /**
      * Add a new notification for this errata
      * @param dateIn The notify date
      */

@@ -85,8 +85,7 @@ PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         </set>
 
 
-        <set name="erratas" lazy="true" table="rhnChannelErrata"
-            cascade="save-update">
+        <set name="erratas" lazy="true" table="rhnChannelErrata" inverse="true">
             <key column="channel_id"/>
             <many-to-many
                 class="com.redhat.rhn.domain.errata.impl.PublishedErrata"

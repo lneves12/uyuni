@@ -663,7 +663,7 @@ public abstract class AbstractErrata extends BaseDomainHelper implements
      */
     public void clearChannels() {
         if (this.getChannels() != null) {
-            this.getChannels().clear();
+            this.getChannels().forEach(c -> c.removeErrata(this));
         }
         Iterator<ErrataFile> i = IteratorUtils.getIterator(this.getFiles());
         while (i.hasNext()) {
