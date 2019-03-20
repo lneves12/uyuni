@@ -14,9 +14,7 @@
  */
 package com.suse.manager.webui.controllers.contentmanagement.handlers;
 
-import com.suse.manager.webui.controllers.contentmanagement.request.EnvironmentRequest;
-import com.suse.manager.webui.controllers.contentmanagement.request.ProjectLabelRequest;
-import com.suse.manager.webui.controllers.contentmanagement.request.ProjectSourcesRequest;
+import com.suse.manager.webui.controllers.contentmanagement.request.ProjectBuildRequest;
 import com.suse.utils.Json;
 
 import com.google.gson.Gson;
@@ -43,9 +41,9 @@ public class ProjectActionsHandler {
      * @param req the http request
      * @return project label request bean
      */
-    public static ProjectLabelRequest getProjectLabelRequest(Request req) {
+    public static ProjectBuildRequest getProjectBuildRequest(Request req) {
         try {
-            return GSON.fromJson(req.body(), ProjectLabelRequest.class);
+            return GSON.fromJson(req.body(), ProjectBuildRequest.class);
         }
         catch (JsonParseException e) {
             throw Spark.halt(HttpStatus.SC_BAD_REQUEST);
@@ -54,15 +52,17 @@ public class ProjectActionsHandler {
 
     /**
      * validate project label request bean
-     * @param projectLabel the project label request bean
+     * @param projectBuild the project label request bean
      * @return validation errors
      */
-    public static HashMap<String, String> validateProjectLabelRequest(ProjectLabelRequest projectLabel) {
+    public static HashMap<String, String> validateProjectBuildlRequest(ProjectBuildRequest projectBuild) {
         HashMap<String, String> requestErrors = new HashMap<>();
 
-        if (StringUtils.isEmpty(projectLabel.getProjectLabel())) {
+        if (StringUtils.isEmpty(projectBuild.getProjectLabel())) {
             requestErrors.put("projectLabel", "Project label is required");
         }
+
+        // TODO: Validate characters limit for message - Check database
 
         return requestErrors;
     }

@@ -10,7 +10,7 @@ import ChannelsSelection from "./channels/channels-selection";
 import {Panel} from "../../../../../../components/panels/Panel";
 
 type SourcesProps = {
-  projectId: string,
+  projectId: String,
   softwareSources: Array<projectSoftwareSourceType>,
   onChange: Function,
 };
@@ -77,7 +77,7 @@ const renderSourceEntry = (source) => {
 const Sources = (props: SourcesProps) => {
 
   const {onAction, cancelAction, isLoading} = useProjectActionsApi({
-    projectId: props.projectId, nestedResource: "softwaresources"
+    projectId: props.projectId, projectResource: "softwaresources"
   });
 
 
@@ -89,6 +89,7 @@ const Sources = (props: SourcesProps) => {
       panelLevel="2"
       collapsible
       customIconClass="fa-small"
+      onCancel={() => cancelAction()}
       onOpen={({setItem}) => setItem(props.softwareSources.map(source => source.label))}
       onSave={({closeDialog, item}) => {
         const requestParam = {
@@ -98,7 +99,6 @@ const Sources = (props: SourcesProps) => {
 
         onAction(requestParam, "update")
           .then((projectWithUpdatedSources) => {
-            props.onChange(projectWithUpdatedSources)
             closeDialog();
             showSuccessToastr(t("Sources edited successfully"));
             props.onChange(projectWithUpdatedSources)
@@ -137,7 +137,7 @@ const Sources = (props: SourcesProps) => {
                       <ul className="list-unstyled">
                         {
                           props.softwareSources.slice(1, props.softwareSources.length).map(source =>
-                            <li>
+                            <li key={`softwareSources_entry_${source.id}`}>
                               {renderSourceEntry(source)}
                             </li>
                           )

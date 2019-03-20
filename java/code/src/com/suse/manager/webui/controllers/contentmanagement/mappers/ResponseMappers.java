@@ -98,6 +98,7 @@ public class ResponseMappers {
                     EnvironmentResponse environmentResponse = new EnvironmentResponse();
                     environmentResponse.setLabel(envDB.getLabel());
                     environmentResponse.setName(envDB.getName());
+                    environmentResponse.setVersion(envDB.getVersion());
                     environmentResponse.setDescription(envDB.getDescription());
                     environmentResponse.setProjectLabel(envDB.getContentProject().getLabel());
                     return environmentResponse;

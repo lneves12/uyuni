@@ -4,10 +4,17 @@ import useProjectActionsApi from "../shared/api/use-project-actions-api";
 import {TopPanel} from "components/panels/TopPanel";
 import TopPanelButtons from "./top-panel-buttons";
 import PropertiesCreate from "../shared/components/panels/properties/properties-create";
-import {handlePropertiesChange} from "../shared/state/project/project.state";
 import {showErrorToastr} from "components/toastr/toastr";
 import withPageWrapper from 'components/general/with-page-wrapper';
 import { hot } from 'react-hot-loader';
+
+
+function handlePropertiesChange (project, newProperties) {
+  return {
+    ...project,
+    properties: newProperties
+  }
+}
 
 const CreateProject = () => {
 
@@ -44,7 +51,7 @@ const CreateProject = () => {
           >
             <PropertiesCreate
               properties={project.properties}
-              onChange={(newProperties) => setProject(handlePropertiesChange(project, newProperties))}
+              onChange={(newProperties) => setProject({...project, properties: newProperties})}
             />
           </TopPanel>
   )

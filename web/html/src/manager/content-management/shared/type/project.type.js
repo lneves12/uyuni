@@ -1,9 +1,17 @@
 // @flow
+
+//TODO: change first letter to UpperCase
+
+export type projectHistoryEntry = {
+  version: number,
+  message?: string
+}
+
 export type projectPropertiesType = {
   label: String,
   name: String,
   description?: String,
-  historyEntries?: String,
+  historyEntries: Array<projectHistoryEntry>,
 }
 
 export type projectSoftwareSourceType = {

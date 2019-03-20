@@ -1,4 +1,4 @@
-/**
+ /**
  * Copyright (c) 2018 SUSE LLC
  *
  * This software is licensed to you under the GNU General Public License,
@@ -16,18 +16,15 @@ package com.suse.manager.webui.controllers.contentmanagement.handlers;
 
 import static com.suse.manager.webui.utils.SparkApplicationHelper.json;
 import static com.suse.manager.webui.utils.SparkApplicationHelper.withUser;
-import static spark.Spark.put;
+import static spark.Spark.post;
 
 import com.redhat.rhn.domain.contentmgmt.ContentEnvironment;
 import com.redhat.rhn.domain.contentmgmt.ContentProject;
-import com.redhat.rhn.domain.contentmgmt.ProjectSource;
-import com.redhat.rhn.domain.contentmgmt.SoftwareProjectSource;
 import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.manager.contentmgmt.ContentManager;
 
 import com.suse.manager.webui.controllers.contentmanagement.mappers.ResponseMappers;
-import com.suse.manager.webui.controllers.contentmanagement.request.ProjectLabelRequest;
-import com.suse.manager.webui.controllers.contentmanagement.request.ProjectSourcesRequest;
+import com.suse.manager.webui.controllers.contentmanagement.request.ProjectBuildRequest;
 import com.suse.manager.webui.utils.gson.ResultJson;
 import com.suse.utils.Json;
 
@@ -39,7 +36,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import spark.Request;
 import spark.Response;
@@ -56,7 +52,7 @@ public class ProjectActionsApiController {
 
     /** Init routes for ContentManagement Sources Api.*/
     public static void initRoutes() {
-        put("/manager/contentmanagement/api/projects/:projectId/build",
+        post("/manager/contentmanagement/api/projects/:projectId/build",
                 withUser(ProjectActionsApiController::buildProject));
     }
 
@@ -68,9 +64,8 @@ public class ProjectActionsApiController {
      * @return the JSON data
      */
     public static String buildProject(Request req, Response res, User user) {
-        ProjectLabelRequest projectLabelRequest = ProjectActionsHandler.getProjectLabelRequest(req);
-
-        HashMap<String, String> requestErrors = ProjectActionsHandler.validateProjectLabelRequest(projectLabelRequest);
+        ProjectBuildRequest projectLabelRequest = ProjectActionsHandler.getProjectBuildRequest(req);
+        HashMap<String, String> requestErrors = ProjectActionsHandler.validateProjectBuildlRequest(projectLabelRequest);
         if (!requestErrors.isEmpty()) {
             return json(GSON, res, HttpStatus.SC_BAD_REQUEST, ResultJson.error(Arrays.asList(""), requestErrors));
         }
@@ -78,7 +73,7 @@ public class ProjectActionsApiController {
         String projectLabel = projectLabelRequest.getProjectLabel();
         ContentProject dbContentProject = ContentManager.lookupProject(projectLabel, user).get();
 
-//        ContentManager.
+        ContentManager.buildProject(projectLabel, Optional.ofNullable(projectLabelRequest.getMessage()), true, user);
 
         // [LN] Todo centralize this logic for all api
         List<ContentEnvironment> dbContentEnvironments = ContentManager.listProjectEnvironments(projectLabel, user);

@@ -17,12 +17,16 @@ package com.suse.manager.webui.controllers.contentmanagement.request;
 /**
  * JSON request wrapper for an environment of a content project.
  */
-public class ProjectLabelRequest {
+public class ProjectBuildRequest {
 
     private String projectLabel;
+    private String message;
 
     public String getProjectLabel() {
         return projectLabel;
     }
 
+    public String getMessage() {
+        return message;
+    }
 }
