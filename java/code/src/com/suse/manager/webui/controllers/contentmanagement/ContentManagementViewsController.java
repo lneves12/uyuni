@@ -14,33 +14,30 @@
  */
 package com.suse.manager.webui.controllers.contentmanagement;
 
-import static com.suse.manager.webui.utils.SparkApplicationHelper.withCsrfToken;
-import static com.suse.manager.webui.utils.SparkApplicationHelper.withUser;
-import static spark.Spark.get;
-
+import com.google.gson.Gson;
 import com.redhat.rhn.domain.contentmgmt.ContentEnvironment;
+import com.redhat.rhn.domain.contentmgmt.ContentFilter;
 import com.redhat.rhn.domain.contentmgmt.ContentProject;
 import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.manager.contentmgmt.ContentManager;
-
 import com.suse.manager.webui.controllers.contentmanagement.mappers.ResponseMappers;
 import com.suse.manager.webui.utils.FlashScopeHelper;
 import com.suse.utils.Json;
-
-import com.google.gson.Gson;
-
-import org.apache.log4j.Logger;
-
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+import org.apache.log4j.Logger;
 import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
 import spark.template.jade.JadeTemplateEngine;
+
+import static com.suse.manager.webui.utils.SparkApplicationHelper.withCsrfToken;
+import static com.suse.manager.webui.utils.SparkApplicationHelper.withUser;
+import static spark.Spark.get;
 
 /**
  * Spark controller class for content management pages.
@@ -59,12 +56,21 @@ public class ContentManagementViewsController {
      * Invoked from Router. Init routes for ContentManagement Views.
      */
     public static void initRoutes(JadeTemplateEngine jade) {
+        // Projects
         get("/manager/contentmanagement/project",
                 withCsrfToken(ContentManagementViewsController::createProjectView), jade);
         get("/manager/contentmanagement/project/:label",
                 withCsrfToken(withUser(ContentManagementViewsController::editProjectView)), jade);
         get("/manager/contentmanagement/projects",
                 withUser(ContentManagementViewsController::listProjectsView), jade);
+
+        // Filters
+        get("/manager/contentmanagement/filter",
+                withCsrfToken(ContentManagementViewsController::createFilterView), jade);
+        get("/manager/contentmanagement/filter/:label",
+                withCsrfToken(withUser(ContentManagementViewsController::editFilterView)), jade);
+        get("/manager/contentmanagement/filters",
+                withUser(ContentManagementViewsController::listFiltersView), jade);
     }
 
     /**
@@ -127,4 +133,53 @@ public class ContentManagementViewsController {
         return new ModelAndView(data, "controllers/contentmanagement/templates/list-projects.jade");
     }
 
+    /**
+     *
+     * @param req the request object
+     * @param res the response object
+     * @param user the current user
+     * @return
+     */
+    public static ModelAndView listFiltersView(Request req, Response res, User user) {
+        Map<String, Object> data = new HashMap<>();
+
+        List<ContentFilter> filters = new LinkedList<>();
+
+        data.put("flashMessage", FlashScopeHelper.flash(req));
+        data.put("contentFilters", GSON.toJson(filters));
+
+        return new ModelAndView(data, "controllers/contentmanagement/templates/list-filters.jade");
+    }
+
+    /**
+     *
+     * @param req the request object
+     * @param res the response object
+     * @return
+     */
+    public static ModelAndView createFilterView(Request req, Response res) {
+        Map<String, Object> data = new HashMap<>();
+        return new ModelAndView(data, "controllers/contentmanagement/templates/create-filter.jade");
+    }
+
+    /**
+     *
+     * @param req the request object
+     * @param res the response object
+     * @param user the current user
+     * @return
+     */
+    public static ModelAndView editFilterView(Request req, Response res, User user) {
+
+        String projectToEditLabel = req.params("label");
+
+        Optional<ContentFilter> projectToEdit = null; //ContentManager.lookupProject(projectToEditLabel, user);
+
+        // TODO: Handle errors
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("wasFreshlyCreatedMessage", FlashScopeHelper.flash(req));
+
+        return new ModelAndView(data, "controllers/contentmanagement/templates/filter.jade");
+    }
 }
