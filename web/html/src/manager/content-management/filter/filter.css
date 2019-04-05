@@ -1,0 +1,15 @@
+/*Grouped Pannels*/
+
+:global(.panel-group-contentmngt) {
+    margin-top: 60px;
+}
+
+:global(.panel-group-contentmngt > .panel) {
+    margin: 0px;
+    border-radius: 0px;
+    overflow: hidden;
+}
+
+:global(.panel-group-contentmngt > .panel:first-child) {
+    border-bottom: none;
+}
