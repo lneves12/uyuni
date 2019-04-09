@@ -15,23 +15,23 @@
 package com.suse.manager.webui.controllers.contentmanagement.mappers;
 
 
-import static com.suse.utils.Opt.stream;
-
 import com.redhat.rhn.domain.contentmgmt.ContentEnvironment;
+import com.redhat.rhn.domain.contentmgmt.ContentFilter;
 import com.redhat.rhn.domain.contentmgmt.ContentProject;
 import com.redhat.rhn.domain.contentmgmt.ProjectSource;
 import com.redhat.rhn.domain.contentmgmt.SoftwareProjectSource;
-
 import com.suse.manager.webui.controllers.contentmanagement.response.EnvironmentResponse;
+import com.suse.manager.webui.controllers.contentmanagement.response.FilterResumeResponse;
 import com.suse.manager.webui.controllers.contentmanagement.response.ProjectHistoryEntryResponse;
 import com.suse.manager.webui.controllers.contentmanagement.response.ProjectPropertiesResponse;
 import com.suse.manager.webui.controllers.contentmanagement.response.ProjectResponse;
 import com.suse.manager.webui.controllers.contentmanagement.response.ProjectResumeResponse;
 import com.suse.manager.webui.controllers.contentmanagement.response.ProjectSoftwareSourceResponse;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.suse.utils.Opt.stream;
 
 /**
  * Utility class to map db entities into view response beans
@@ -157,4 +157,28 @@ public class ResponseMappers {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Map db info into a list with resume of filters views beans
+     *
+     * @param projectsByFilterDB list of filters db with projects
+     * @return list with a filter resume response bean
+     */
+    public static List<FilterResumeResponse> mapFilterListingFromDB(
+            Map<ContentFilter, List<ContentProject>> projectsByFilterDB) {
+        return projectsByFilterDB.entrySet().stream()
+                .map(e -> {
+                    ContentFilter filter = e.getKey();
+                    List<ContentProject> projects = e.getValue();
+
+                    FilterResumeResponse contentFilterResumeResponse = new FilterResumeResponse();
+                    contentFilterResumeResponse.setName(filter.getName());
+                    contentFilterResumeResponse.setProjects(
+                            projects.stream()
+                                    .map(p -> p.getLabel())
+                                    .collect(Collectors.toList())
+                    );
+                    return contentFilterResumeResponse;
+                })
+                .collect(Collectors.toList());
+    }
 }
