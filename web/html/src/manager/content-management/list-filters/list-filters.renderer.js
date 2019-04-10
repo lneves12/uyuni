@@ -11,6 +11,10 @@ window.pageRenderers.contentManagement.listFilters.renderer = (id, {filters, fla
   let filtersJson = [];
   try{
     filtersJson = JSON.parse(filters);
+    /* MOCK UP - DEVELOPMENT STUFF */
+    const fake = '[{"name":"temp1","target":"patch","criteria":"*java*","deny":true,"projects":["temp","another-temp"]},{"name":"temp2","target":"package","criteria":"*py*","deny":false,"projects":["another-temp"]}]';
+    filtersJson = JSON.parse(fake);
+    /*****************/
   }  catch(error) {}
 
   ReactDOM.render(

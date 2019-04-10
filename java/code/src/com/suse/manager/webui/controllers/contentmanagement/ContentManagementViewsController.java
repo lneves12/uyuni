@@ -145,6 +145,9 @@ public class ContentManagementViewsController {
 
         data.put("flashMessage", FlashScopeHelper.flash(req));
         data.put("contentFilters", GSON.toJson(filters));
+        /* TODO ^^^^^
+        * data.put("contentFilters", GSON.toJson( List<FilterResumeResponse> )
+        */
 
 
         return new ModelAndView(data, "controllers/contentmanagement/templates/list-filters.jade");
