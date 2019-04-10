@@ -8,10 +8,8 @@ import { showSuccessToastr } from 'components/toastr/toastr';
 import withPageWrapper from 'components/general/with-page-wrapper';
 
 type FilterOverviewType = {
-  properties: {
-    name: String
-    // add more
-  }
+  name: String,
+  projects: Array<String>
 };
 
 type Props = {
@@ -36,7 +34,8 @@ const ListFilters = (props: Props) => {
   };
 
   const normalizedFilters = props.filters.map(filter => ({
-    name: filter.properties.name
+    name: filter.name,
+    projects: filter.projects
   }));
 
   const panelButtons = (
@@ -73,6 +72,15 @@ const ListFilters = (props: Props) => {
                 {row.name}
               </a>
             }
+          />
+          <Column
+            columnKey="projects"
+            header={t('Projects in use')}
+            cell={row => row.projects.map(p =>
+              <a className="project-tag-link" href={`/rhn/manager/contentmanagement/project/${p}`}>
+                {p}
+              </a>
+              )}
           />
         </Table>
       </TopPanel>

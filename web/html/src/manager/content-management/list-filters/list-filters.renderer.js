@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import ListFilters from './list-filters';
+import "./list-filters.css";
 
 window.pageRenderers = window.pageRenderers || {};
 window.pageRenderers.contentManagement = window.pageRenderers.contentManagement || {};
