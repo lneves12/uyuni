@@ -65,8 +65,6 @@ public class ContentManagementViewsController {
                 withUser(ContentManagementViewsController::listProjectsView), jade);
 
         // Filters
-        get("/manager/contentmanagement/filter",
-                withCsrfToken(ContentManagementViewsController::createFilterView), jade);
         get("/manager/contentmanagement/filter/:label",
                 withCsrfToken(withUser(ContentManagementViewsController::editFilterView)), jade);
         get("/manager/contentmanagement/filters",
@@ -150,17 +148,6 @@ public class ContentManagementViewsController {
 
 
         return new ModelAndView(data, "controllers/contentmanagement/templates/list-filters.jade");
-    }
-
-    /**
-     *
-     * @param req the request object
-     * @param res the response object
-     * @return
-     */
-    public static ModelAndView createFilterView(Request req, Response res) {
-        Map<String, Object> data = new HashMap<>();
-        return new ModelAndView(data, "controllers/contentmanagement/templates/create-filter.jade");
     }
 
     /**
