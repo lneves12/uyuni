@@ -1,7 +1,6 @@
-export type filterPropertiesType = {
-  label?: string,
-}
-
-export type filterType = {
-  properties: filterProperties,
+export type FilterType = {
+  name?: string,
+  target?: string,
+  criteria?: string
+  deny: boolean
 }

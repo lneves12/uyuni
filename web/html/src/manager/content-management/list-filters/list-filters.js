@@ -6,14 +6,11 @@ import Functions from 'utils/functions';
 import {LinkButton} from 'components/buttons';
 import { showSuccessToastr } from 'components/toastr/toastr';
 import withPageWrapper from 'components/general/with-page-wrapper';
-
-type FilterOverviewType = {
-  name: String,
-  projects: Array<String>
-};
+import FilterForm from '../shared/components/panels/filters/filter-form';
+import type {FilterType} from '../shared/type/filter.type.js';
 
 type Props = {
-  filters: Array<FilterOverviewType>,
+  filters: Array<FilterType>,
   flashMessage: String,
 };
 
@@ -35,6 +32,9 @@ const ListFilters = (props: Props) => {
 
   const normalizedFilters = props.filters.map(filter => ({
     name: filter.name,
+    target: filter.target,
+    criteria: filter.criteria,
+    deny: filter.deny,
     projects: filter.projects
   }));
 
@@ -83,6 +83,9 @@ const ListFilters = (props: Props) => {
               )}
           />
         </Table>
+        <FilterForm
+          filter={normalizedFilters[0]}
+          onChange={(item) => setItem(item)}/>
       </TopPanel>
     );
 }
