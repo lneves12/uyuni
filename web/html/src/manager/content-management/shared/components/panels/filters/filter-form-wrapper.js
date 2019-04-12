@@ -11,7 +11,6 @@ type Props = {
   panelLevel: string,
   onSave: Function,
   renderCreationContent: Function,
-  renderContent: Function,
   className?: string,
   onCancel?: Function,
   onOpen?: Function,
@@ -50,8 +49,6 @@ const FilterFormWrapper = (props: Props) => {
           props.onOpen && props.onOpen({setItem: setStateItem})
         }}
       />
-
-      {props.renderContent()}
 
       <Dialog id={modalNameId}
               title={props.title}

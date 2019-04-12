@@ -132,9 +132,6 @@ const ListFilters = (props: Props) => {
                       onChange={(item) => setItem(item)}/>
                   )}
                 }
-                renderContent={() =>
-                  <span>A</span>
-                }
               />
             }
           />
