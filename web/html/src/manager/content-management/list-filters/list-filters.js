@@ -8,6 +8,9 @@ import { showSuccessToastr } from 'components/toastr/toastr';
 import withPageWrapper from 'components/general/with-page-wrapper';
 import FilterForm from '../shared/components/panels/filters/filter-form';
 import type {FilterType} from '../shared/type/filter.type.js';
+import {Loading} from "components/loading/loading";
+import useFilterActionsApi from "../shared/api/use-filter-actions-api";
+import FilterFormWrapper from "../shared/components/panels/filters/filter-form-wrapper";
 
 type Props = {
   filters: Array<FilterType>,
@@ -51,6 +54,8 @@ const ListFilters = (props: Props) => {
     </div>
   );
 
+  const {onAction, cancelAction, isLoading} = useFilterActionsApi({"":""});
+
   return (
       <TopPanel title={t('Filter')} icon="spacewalk-icon-software-channels" button={panelButtons}>
         <Table
@@ -82,10 +87,58 @@ const ListFilters = (props: Props) => {
               </a>
               )}
           />
+          <Column
+            columnKey="action-buttons"
+            header={t('Action buttons')}
+            cell={row =>
+              <FilterFormWrapper
+                id="filterEditorPanel"
+                title="Filter"
+                creatingText="Edit FIlter"
+                panelLevel="2"
+                collapsible
+                customIconClass="fa-small"
+                disableOperations={isLoading}
+                // onSave={({ item, closeDialog }) =>
+                //   onAction(mapAddEnvironmentRequest(item, props.environments, props.projectId), "create")
+                //     .then((projectWithCreatedEnvironment) => {
+                //       closeDialog();
+                //       showSuccessToastr(t("Environment created successfully"));
+                //       props.onChange(projectWithCreatedEnvironment)
+                //     })
+                //     .catch((error) => {
+                //       showErrorToastr(error);
+                //     })}
+                onSave={() => {}}
+                // onOpen={({ setItem }) => setItem({})}
+                onOpen={() => {}}
+                // onCancel={() => cancelAction()}
+                onCancel={() => {}}
+                renderCreationContent={({ open, item, setItem }) => {
+          
+                  if (!open) {
+                    return null;
+                  }
+          
+                  if (isLoading) {
+                    return (
+                      <Loading text={t('Creating the filter...')}/>
+                    )
+                  }
+          
+                  return (
+                    <FilterForm
+                      filter={row}
+                      onChange={(item) => setItem(item)}/>
+                  )}
+                }
+                renderContent={() =>
+                  <span>A</span>
+                }
+              />
+            }
+          />
         </Table>
-        <FilterForm
-          filter={normalizedFilters[0]}
-          onChange={(item) => setItem(item)}/>
       </TopPanel>
     );
 }
