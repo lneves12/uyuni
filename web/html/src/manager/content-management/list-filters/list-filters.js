@@ -92,7 +92,7 @@ const ListFilters = (props: Props) => {
             header={t('Action buttons')}
             cell={row =>
               <FilterFormWrapper
-                id="filterEditorPanel"
+                id={"filterEditorPanel-" + row.name}
                 title="Filter"
                 creatingText="Edit FIlter"
                 panelLevel="2"
