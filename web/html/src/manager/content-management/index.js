@@ -4,6 +4,5 @@ module.exports = {
     'list-projects/list-projects.renderer.js',
     'project/project.renderer.js',
     'list-filters/list-filters.renderer.js',
-    'filter/filter.renderer.js',
   ],
 };
