@@ -21,6 +21,7 @@ import com.redhat.rhn.domain.contentmgmt.ContentProject;
 import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.manager.contentmgmt.ContentManager;
 import com.suse.manager.webui.controllers.contentmanagement.mappers.ResponseMappers;
+import com.suse.manager.webui.controllers.contentmanagement.response.ProjectResumeResponse;
 import com.suse.manager.webui.utils.FlashScopeHelper;
 import com.suse.utils.Json;
 import java.util.HashMap;
@@ -141,7 +142,13 @@ public class ContentManagementViewsController {
     public static ModelAndView listFiltersView(Request req, Response res, User user) {
         Map<String, Object> data = new HashMap<>();
 
-        List<ContentFilter> filters = new LinkedList<>();
+
+        List<ContentFilter> filters = ContentManager.listFilters(user);
+        List<ContentProject> projects = ContentManager.listProjects(user);
+
+//        filters.get(0).getProjects();
+
+//        List<ProjectResumeResponse> filterResumeResponse = ResponseMappers.mapFilterListingFromDB();
 
         data.put("flashMessage", FlashScopeHelper.flash(req));
         data.put("contentFilters", GSON.toJson(filters));

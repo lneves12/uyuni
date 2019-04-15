@@ -20,20 +20,25 @@ import com.redhat.rhn.domain.org.Org;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -47,13 +52,14 @@ import javax.persistence.Transient;
 @Table(name = "suseContentFilter")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "type")
-public abstract class ContentFilter<T> extends BaseDomainHelper implements Predicate<T> {
+public abstract class   ContentFilter<T> extends BaseDomainHelper implements Predicate<T> {
 
     private Long id;
     private Org org;
     private String name;
     private Rule rule;
     private FilterCriteria criteria;
+    private List<ContentProject> projects;
 
     /**
      * Entity type that is dealt with by filter.
