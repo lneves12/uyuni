@@ -18,14 +18,14 @@ import com.google.gson.Gson;
 import com.redhat.rhn.domain.contentmgmt.ContentEnvironment;
 import com.redhat.rhn.domain.contentmgmt.ContentFilter;
 import com.redhat.rhn.domain.contentmgmt.ContentProject;
+import com.redhat.rhn.domain.contentmgmt.ContentProjectFactory;
 import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.manager.contentmgmt.ContentManager;
 import com.suse.manager.webui.controllers.contentmanagement.mappers.ResponseMappers;
-import com.suse.manager.webui.controllers.contentmanagement.response.ProjectResumeResponse;
+import com.suse.manager.webui.controllers.contentmanagement.response.FilterResponse;
 import com.suse.manager.webui.utils.FlashScopeHelper;
 import com.suse.utils.Json;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -65,11 +65,8 @@ public class ContentManagementViewsController {
         get("/manager/contentmanagement/projects",
                 withUser(ContentManagementViewsController::listProjectsView), jade);
 
-        // Filters
-        get("/manager/contentmanagement/filter/:label",
-                withCsrfToken(withUser(ContentManagementViewsController::editFilterView)), jade);
         get("/manager/contentmanagement/filters",
-                withUser(ContentManagementViewsController::listFiltersView), jade);
+                withCsrfToken(withUser(ContentManagementViewsController::listFiltersView)), jade);
     }
 
     /**
@@ -142,42 +139,21 @@ public class ContentManagementViewsController {
     public static ModelAndView listFiltersView(Request req, Response res, User user) {
         Map<String, Object> data = new HashMap<>();
 
+        Map<ContentFilter, List<ContentProject>> filtersWithProjects = ContentManager.listFilters(user)
+                .stream()
+                .collect(Collectors.toMap(p -> p, p -> ContentProjectFactory.listFilterProjects(p)));
 
-        List<ContentFilter> filters = ContentManager.listFilters(user);
-        List<ContentProject> projects = ContentManager.listProjects(user);
 
-//        filters.get(0).getProjects();
-
-//        List<ProjectResumeResponse> filterResumeResponse = ResponseMappers.mapFilterListingFromDB();
+        List<FilterResponse> filterResponse = ResponseMappers.mapFilterListingFromDB(filtersWithProjects);
 
         data.put("flashMessage", FlashScopeHelper.flash(req));
-        data.put("contentFilters", GSON.toJson(filters));
-        /* TODO ^^^^^
-        * data.put("contentFilters", GSON.toJson( List<FilterResumeResponse> )
-        */
+        data.put("contentFilters", GSON.toJson(filterResponse));
+        if (req.queryParams("openFilterId") != null) {
+            data.put("openFilterId", req.queryParams("openFilterId"));
+        }
 
 
         return new ModelAndView(data, "controllers/contentmanagement/templates/list-filters.jade");
     }
 
-    /**
-     *
-     * @param req the request object
-     * @param res the response object
-     * @param user the current user
-     * @return
-     */
-    public static ModelAndView editFilterView(Request req, Response res, User user) {
-
-        String projectToEditLabel = req.params("label");
-
-        Optional<ContentFilter> projectToEdit = null; //ContentManager.lookupProject(projectToEditLabel, user);
-
-        // TODO: Handle errors
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("wasFreshlyCreatedMessage", FlashScopeHelper.flash(req));
-
-        return new ModelAndView(data, "controllers/contentmanagement/templates/filter.jade");
-    }
 }

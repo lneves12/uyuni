@@ -12,32 +12,41 @@
  * granted to use or replicate Red Hat trademarks that are incorporated
  * in this software or its documentation.
  */
-package com.suse.manager.webui.controllers.contentmanagement.request;
+package com.suse.manager.webui.controllers.contentmanagement.response;
 
 /**
- * JSON request wrapper for an environment of a content project.
+ * JSON response wrapper for a content filter resume.
  */
-public class FilterRequest {
+public class ProjectFilterResponse {
 
+    private Long id;
     private String name;
     private String type;
     private String criteria;
     private Boolean deny;
+    private String state;
 
-    public String getCriteria() {
-        return criteria;
+    public void setId(Long idIn) {
+        this.id = idIn;
     }
 
-    public String getName() {
-        return name;
+    public void setType(String typeIn) {
+        this.type = typeIn;
     }
 
-    public Boolean getDeny() {
-        return deny;
+    public void setCriteria(String criteriaIn) {
+        this.criteria = criteriaIn;
     }
 
-    public String getType() {
-        return type;
+    public void setDeny(Boolean denyIn) {
+        this.deny = denyIn;
     }
 
+    public void setName(String nameIn) {
+        this.name = nameIn;
+    }
+
+    public void setState(String stateIn) {
+        this.state = stateIn;
+    }
 }

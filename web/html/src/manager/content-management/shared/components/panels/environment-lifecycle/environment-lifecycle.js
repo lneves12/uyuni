@@ -4,13 +4,13 @@ import CreatorPanel from "../../../../../../components/panels/CreatorPanel";
 import EnvironmentView from "./environment-view";
 import EnvironmentForm from "./environment-form";
 import {Loading} from "components/loading/loading";
-import useProjectActionsApi from "../../../api/use-project-actions-api";
 import Promote from "../promote/promote";
 import {showErrorToastr, showSuccessToastr} from "components/toastr/toastr";
 import {mapAddEnvironmentRequest, mapUpdateEnvironmentRequest} from './environment.utils';
 
 import type {ProjectEnvironmentType} from '../../../type/project.type.js';
 import type {ProjectHistoryEntry} from "../../../type/project.type";
+import useLifecycleActionsApi from "../../../api/use-lifecycle-actions-api";
 
 type Props = {
   projectId: string,
@@ -21,8 +21,8 @@ type Props = {
 
 const EnvironmentLifecycle = (props: Props) => {
 
-  const {onAction, cancelAction, isLoading} = useProjectActionsApi({
-    projectId: props.projectId, projectResource:"environments"
+  const {onAction, cancelAction, isLoading} = useLifecycleActionsApi({
+    resource: 'projects', nestedResource:"environments"
   });
 
   return (
@@ -35,7 +35,7 @@ const EnvironmentLifecycle = (props: Props) => {
       customIconClass="fa-small"
       disableOperations={isLoading}
       onSave={({ item, closeDialog }) =>
-        onAction(mapAddEnvironmentRequest(item, props.environments, props.projectId), "create")
+        onAction(mapAddEnvironmentRequest(item, props.environments, props.projectId), "create", props.projectId)
           .then((projectWithCreatedEnvironment) => {
             closeDialog();
             showSuccessToastr(t("Environment created successfully"));
@@ -83,7 +83,7 @@ const EnvironmentLifecycle = (props: Props) => {
                       panelLevel="3"
                       disableOperations={isLoading}
                       onSave={({ item, closeDialog }) =>
-                        onAction(mapUpdateEnvironmentRequest(item, props.projectId), "update")
+                        onAction(mapUpdateEnvironmentRequest(item, props.projectId), "update", props.projectId)
                           .then((projectWithUpdatedEnvironment) => {
                             props.onChange(projectWithUpdatedEnvironment)
                             closeDialog();
@@ -95,7 +95,7 @@ const EnvironmentLifecycle = (props: Props) => {
                       onOpen={({ setItem }) => setItem(environment)}
                       onCancel={() => cancelAction()}
                       onDelete={({ item, closeDialog }) => {
-                        return onAction(item, "delete")
+                        return onAction(item, "delete", props.projectId)
                           .then((projectWithDeleteddEnvironment) => {
                             closeDialog()
                               .then(() => {

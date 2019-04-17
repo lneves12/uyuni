@@ -16,17 +16,20 @@ package com.suse.manager.webui.controllers.contentmanagement.handlers;
 
 import static com.suse.manager.webui.utils.SparkApplicationHelper.json;
 import static com.suse.manager.webui.utils.SparkApplicationHelper.withUser;
+import static spark.Spark.get;
+import static spark.Spark.delete;
 import static spark.Spark.post;
 import static spark.Spark.put;
-import static spark.Spark.delete;
 
 import com.redhat.rhn.domain.contentmgmt.ContentFilter;
 import com.redhat.rhn.domain.contentmgmt.ContentManagementException;
+import com.redhat.rhn.domain.contentmgmt.ContentProject;
 import com.redhat.rhn.domain.contentmgmt.FilterCriteria;
 import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.manager.contentmgmt.ContentManager;
 
 import com.suse.manager.webui.controllers.contentmanagement.request.FilterRequest;
+import com.suse.manager.webui.controllers.contentmanagement.request.ProjectFiltersUpdateRequest;
 import com.suse.manager.webui.utils.gson.ResultJson;
 import com.suse.utils.Json;
 
@@ -36,7 +39,9 @@ import org.apache.http.HttpStatus;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import spark.Request;
 import spark.Response;
@@ -53,6 +58,13 @@ public class FilterApiController {
 
     /** Init routes for ContentManagement Filter Api.*/
     public static void initRoutes() {
+
+        put("/manager/contentmanagement/api/projects/:projectId/filters",
+                withUser(FilterApiController::updateFiltersOfProject));
+
+        get("/manager/contentmanagement/api/filters",
+                withUser(FilterApiController::getContentFilters));
+
         post("/manager/contentmanagement/api/filters",
                 withUser(FilterApiController::createContentFilter));
 
@@ -61,6 +73,54 @@ public class FilterApiController {
 
         delete("/manager/contentmanagement/api/filters/:filterId",
                 withUser(FilterApiController::removeContentFilter));
+    }
+
+    /**
+     * Return the project JSON with the result of updating the filters of a project.
+     * @param req the http request
+     * @param res the http response
+     * @param user the current user
+     * @return the JSON data
+     */
+    public static String updateFiltersOfProject(Request req, Response res, User user) {
+        ProjectFiltersUpdateRequest projectFiltersUpdateRequest = FilterHandler.getProjectFiltersRequest(req);
+        String projectLabel = projectFiltersUpdateRequest.getProjectLabel();
+
+        ContentProject dbContentProject = ContentManager.lookupProject(
+                projectFiltersUpdateRequest.getProjectLabel(), user
+        ).get();
+
+        List<Long> filterIdsToDetach = dbContentProject.getProjectFilters()
+                .stream()
+                .map(filter -> filter.getFilter().getId())
+                .collect(Collectors.toList());
+        filterIdsToDetach.forEach(filterId -> ContentManager.detachFilter(
+                projectLabel,
+                filterId,
+                user
+        ));
+
+        projectFiltersUpdateRequest
+                .getFiltersIds()
+                .forEach(filterId ->
+                        ContentManager.attachFilter(
+                                projectLabel,
+                                filterId,
+                                user
+                        ));
+
+        return ControllerApiUtils.fullProjectJsonResponse(res, projectLabel, user);
+    }
+
+    /**
+     * Return the JSON with all the available filters.
+     * @param req the http request
+     * @param res the http response
+     * @param user the current user
+     * @return the JSON data
+     */
+    public static String getContentFilters(Request req, Response res, User user) {
+        return ControllerApiUtils.listFiltersJsonResponse(res, user);
     }
 
     /**
@@ -80,17 +140,17 @@ public class FilterApiController {
 
         FilterCriteria filterCriteria = new FilterCriteria(
                 FilterCriteria.Matcher.CONTAINS,
-                createFilterRequest.getField(),
-                createFilterRequest.getValue());
+                "name",
+                createFilterRequest.getCriteria());
         ContentManager.createFilter(
                 createFilterRequest.getName(),
-                ContentFilter.Rule.lookupByLabel(createFilterRequest.getRule()),
+                createFilterRequest.getDeny() ? ContentFilter.Rule.DENY : ContentFilter.Rule.ALLOW,
                 ContentFilter.EntityType.lookupByLabel(createFilterRequest.getType()),
                 filterCriteria,
                 user
         );
 
-        return json(GSON, res, ResultJson.success());
+        return ControllerApiUtils.listFiltersJsonResponse(res, user);
     }
 
     /**
@@ -101,26 +161,26 @@ public class FilterApiController {
      * @return the JSON data
      */
     public static String updateContentFilter(Request req, Response res, User user) {
-        FilterRequest createFilterRequest = FilterHandler.getFilterRequest(req);
+        FilterRequest updateFilterRequest = FilterHandler.getFilterRequest(req);
 
-        HashMap<String, String> requestErrors = FilterHandler.validateFilterRequest(createFilterRequest);
+        HashMap<String, String> requestErrors = FilterHandler.validateFilterRequest(updateFilterRequest);
         if (!requestErrors.isEmpty()) {
             return json(GSON, res, HttpStatus.SC_BAD_REQUEST, ResultJson.error(Arrays.asList(""), requestErrors));
         }
 
         FilterCriteria filterCriteria = new FilterCriteria(
                 FilterCriteria.Matcher.CONTAINS,
-                createFilterRequest.getField(),
-                createFilterRequest.getValue());
+                "name",
+                updateFilterRequest.getCriteria());
         ContentManager.updateFilter(
                 Long.parseLong(req.params("filterId")),
-                Optional.ofNullable(createFilterRequest.getName()),
-                Optional.of(ContentFilter.Rule.lookupByLabel(createFilterRequest.getRule())),
+                Optional.ofNullable(updateFilterRequest.getName()),
+                Optional.of(updateFilterRequest.getDeny() ? ContentFilter.Rule.DENY : ContentFilter.Rule.ALLOW),
                 Optional.of(filterCriteria),
                 user
         );
 
-        return json(GSON, res, ResultJson.success());
+        return ControllerApiUtils.listFiltersJsonResponse(res, user);
     }
 
     /**
@@ -138,7 +198,7 @@ public class FilterApiController {
             return json(GSON, res, HttpStatus.SC_BAD_REQUEST, ResultJson.error(error.getMessage()));
         }
 
-        return json(GSON, res, ResultJson.success());
+        return ControllerApiUtils.listFiltersJsonResponse(res, user);
     }
 
 }

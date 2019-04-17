@@ -15,12 +15,12 @@
 package com.suse.manager.webui.controllers.contentmanagement.handlers;
 
 import com.suse.manager.webui.controllers.contentmanagement.request.FilterRequest;
+import com.suse.manager.webui.controllers.contentmanagement.request.ProjectFiltersUpdateRequest;
 import com.suse.utils.Json;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 
 import java.util.HashMap;
@@ -36,8 +36,23 @@ public class FilterHandler {
 
     private FilterHandler() { }
 
+
     /**
-     * map request into the environment request bean
+     * map request into the project update filters request bean
+     * @param req the http request
+     * @return environment request bean
+     */
+    public static ProjectFiltersUpdateRequest getProjectFiltersRequest(Request req) {
+        try {
+            return GSON.fromJson(req.body(), ProjectFiltersUpdateRequest.class);
+        }
+        catch (JsonParseException e) {
+            throw Spark.halt(HttpStatus.SC_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * map request into the filter request bean
      * @param req the http request
      * @return environment request bean
      */
@@ -51,7 +66,7 @@ public class FilterHandler {
     }
 
     /**
-     * map validate environment request bean
+     * map validate filter request bean
      * @param envRequest the environment request bean
      * @return validation errors
      */

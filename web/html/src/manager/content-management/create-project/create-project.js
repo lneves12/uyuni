@@ -1,12 +1,12 @@
 // @flow
 import React, {useState} from 'react';
-import useProjectActionsApi from "../shared/api/use-project-actions-api";
 import {TopPanel} from "components/panels/TopPanel";
 import TopPanelButtons from "./top-panel-buttons";
 import PropertiesCreate from "../shared/components/panels/properties/properties-create";
 import {showErrorToastr} from "components/toastr/toastr";
 import withPageWrapper from 'components/general/with-page-wrapper';
 import {hot} from 'react-hot-loader';
+import useLifecycleActionsApi from "../shared/api/use-lifecycle-actions-api";
 
 const CreateProject = () => {
 
@@ -19,7 +19,7 @@ const CreateProject = () => {
       }
   });
 
-  const { onAction } = useProjectActionsApi({});
+  const { onAction } = useLifecycleActionsApi({resource: 'projects'});
 
   return (
           <TopPanel

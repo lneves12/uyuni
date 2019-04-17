@@ -12,19 +12,24 @@
  * granted to use or replicate Red Hat trademarks that are incorporated
  * in this software or its documentation.
  */
-package com.suse.manager.webui.controllers.contentmanagement.response;
+package com.suse.manager.webui.controllers.contentmanagement.request;
 
 import java.util.List;
 
 /**
- * JSON response wrapper for a content filter resume.
+ * JSON request wrapper to update the filters of a content project.
  */
-public class FilterResumeResponse {
+public class ProjectFiltersUpdateRequest {
 
-    private String name;
-    private List<String> projects;
+    private String projectLabel;
+    private List<Long> filtersIds;
 
-    public void setName(String nameIn) { this.name = nameIn; }
+    public String getProjectLabel() {
+        return projectLabel;
+    }
 
-    public void setProjects(List<String> projectsIn) { this.projects = projectsIn; }
+    public List<Long> getFiltersIds() {
+        return filtersIds;
+    }
+
 }

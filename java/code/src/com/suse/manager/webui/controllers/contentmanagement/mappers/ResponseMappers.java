@@ -15,23 +15,27 @@
 package com.suse.manager.webui.controllers.contentmanagement.mappers;
 
 
+import static com.suse.utils.Opt.stream;
+
 import com.redhat.rhn.domain.contentmgmt.ContentEnvironment;
 import com.redhat.rhn.domain.contentmgmt.ContentFilter;
 import com.redhat.rhn.domain.contentmgmt.ContentProject;
+import com.redhat.rhn.domain.contentmgmt.ContentProjectFilter;
 import com.redhat.rhn.domain.contentmgmt.ProjectSource;
 import com.redhat.rhn.domain.contentmgmt.SoftwareProjectSource;
+
 import com.suse.manager.webui.controllers.contentmanagement.response.EnvironmentResponse;
-import com.suse.manager.webui.controllers.contentmanagement.response.FilterResumeResponse;
+import com.suse.manager.webui.controllers.contentmanagement.response.FilterResponse;
+import com.suse.manager.webui.controllers.contentmanagement.response.ProjectFilterResponse;
 import com.suse.manager.webui.controllers.contentmanagement.response.ProjectHistoryEntryResponse;
 import com.suse.manager.webui.controllers.contentmanagement.response.ProjectPropertiesResponse;
 import com.suse.manager.webui.controllers.contentmanagement.response.ProjectResponse;
 import com.suse.manager.webui.controllers.contentmanagement.response.ProjectResumeResponse;
 import com.suse.manager.webui.controllers.contentmanagement.response.ProjectSoftwareSourceResponse;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.suse.utils.Opt.stream;
 
 /**
  * Utility class to map db entities into view response beans
@@ -126,6 +130,7 @@ public class ResponseMappers {
                         .flatMap(source -> stream(source.asSoftwareSource()))
                         .collect(Collectors.toList())
         ));
+        project.setFilters(mapProjectFilterFromDB(projectDB.getProjectFilters()));
         project.setEnvironments(mapEnvironmentsFromDB(envsDB));
 
         return project;
@@ -158,26 +163,54 @@ public class ResponseMappers {
     }
 
     /**
-     * Map db info into a list with resume of filters views beans
+     * Map db info into a list with filters views beans with projects
      *
-     * @param projectsByFilterDB list of filters db with projects
+     * @param filtersWithProjects list of filters db with projects
      * @return list with a filter resume response bean
      */
-    public static List<FilterResumeResponse> mapFilterListingFromDB(
-            Map<ContentFilter, List<ContentProject>> projectsByFilterDB) {
-        return projectsByFilterDB.entrySet().stream()
+    public static List<FilterResponse> mapFilterListingFromDB(
+            Map<ContentFilter, List<ContentProject>> filtersWithProjects) {
+        return filtersWithProjects.entrySet().stream()
                 .map(e -> {
                     ContentFilter filter = e.getKey();
                     List<ContentProject> projects = e.getValue();
 
-                    FilterResumeResponse contentFilterResumeResponse = new FilterResumeResponse();
-                    contentFilterResumeResponse.setName(filter.getName());
-                    contentFilterResumeResponse.setProjects(
+                    FilterResponse contentFilterResponse = new FilterResponse();
+                    contentFilterResponse.setId(filter.getId());
+                    contentFilterResponse.setName(filter.getName());
+                    contentFilterResponse.setType(filter.getEntityType().getLabel());
+                    contentFilterResponse.setDeny(filter.getRule() == ContentFilter.Rule.DENY);
+                    contentFilterResponse.setCriteria(filter.getCriteria().getValue());
+                    contentFilterResponse.setProjects(
                             projects.stream()
                                     .map(p -> p.getLabel())
                                     .collect(Collectors.toList())
                     );
-                    return contentFilterResumeResponse;
+                    return contentFilterResponse;
+                })
+                .collect(Collectors.toList());
+    }
+
+
+    /**
+     * Map db info into a list with resume of filters views beans
+     *
+     * @param projectFilters list of projectFilters
+     * @return list with a filter resume response bean
+     */
+    public static List<ProjectFilterResponse> mapProjectFilterFromDB(List<ContentProjectFilter> projectFilters) {
+        return projectFilters
+                .stream()
+                .map(projectFilter -> {
+                    ContentFilter filter = projectFilter.getFilter();
+                    ProjectFilterResponse contentProjectFilterResponse = new ProjectFilterResponse();
+                    contentProjectFilterResponse.setId(filter.getId());
+                    contentProjectFilterResponse.setName(filter.getName());
+                    contentProjectFilterResponse.setType(filter.getEntityType().getLabel());
+                    contentProjectFilterResponse.setDeny(filter.getRule() == ContentFilter.Rule.DENY);
+                    contentProjectFilterResponse.setCriteria(filter.getCriteria().getValue());
+                    contentProjectFilterResponse.setState(projectFilter.getState().toString());
+                    return contentProjectFilterResponse;
                 })
                 .collect(Collectors.toList());
     }
