@@ -43,6 +43,7 @@ const ListFilters = (props: Props) => {
         filter={{type: 'package', deny: true}}
         icon='fa-plus'
         buttonText='Create Filter'
+        openFilterId={props.openFilterId}
         onChange={setDisplayedFilters}
       />
     </div>

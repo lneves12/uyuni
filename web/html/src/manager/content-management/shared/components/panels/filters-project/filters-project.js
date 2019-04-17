@@ -26,7 +26,7 @@ const renderFilterEntry = (filter) => {
         title={t(`Edit Filter ${filter.name}`)}
         className='pull-right'
         text={t("Edit")}
-        href="/rhn/manager/contentmanagement/filters"
+        href={`/rhn/manager/contentmanagement/filters?openFilterId=${filter.id}`}
       />
     </div>;
 
