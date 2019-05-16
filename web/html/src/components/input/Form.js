@@ -85,8 +85,8 @@ class Form extends React.Component<Props, State> {
     }
   }
 
-  validate(component: React.ElementRef<any>) {
-    const { props } = component;
+  validate(component: React.ElementRef<any>, nextProps: Object) {
+    const props = nextProps || component.props;
     const { name } = props;
     const results = [];
     let isValid = true;
