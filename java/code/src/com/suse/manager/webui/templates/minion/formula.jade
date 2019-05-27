@@ -3,8 +3,8 @@ include ./minion-header.jade
 #formula
 
 script(type='text/javascript').
-    var csrfToken = "#{csrf_token}";
-    var serverId = "#{server.id}";
-    var formulaId = #{formula_id};
+    window.csrfToken = "#{csrf_token}";
+    window.serverId = "#{server.id}";
+    window.formulaId = #{formula_id};
 
 script(src='/javascript/manager/minion/formula/minion-formula.bundle.js?cb=#{webVersion}', type='text/javascript')

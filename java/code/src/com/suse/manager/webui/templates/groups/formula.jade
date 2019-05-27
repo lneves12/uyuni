@@ -16,8 +16,8 @@
 #formula
 
 script(type='text/javascript').
-    var csrfToken = "#{csrf_token}";
-    var groupId = "#{groupId}";
-    var formulaId = #{formula_id};
+    window.csrfToken = "#{csrf_token}";
+    window.groupId = "#{groupId}";
+    window.formulaId = #{formula_id};
 
 script(src='/javascript/manager/groups/formula/group-formula.bundle.js?cb=#{webVersion}', type='text/javascript')
