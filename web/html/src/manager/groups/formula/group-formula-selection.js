@@ -7,6 +7,7 @@ const ReactDOM = require("react-dom");
 const Network = require("../../../utils/network");
 const FormulaSelection = require("../../../components/formula-selection").FormulaSelection;
 const capitalize = require("../../../utils/functions").Utils.capitalize;
+const SpaRenderer  = require("core/spa/spa-renderer").default;
 
 const messageTexts = {
   "formulas_saved" : <p>{t("Formula saved. Apply the ")}<a href={'/rhn/manager/groups/details/highstate?sgid=' + groupId}>{t("Highstate")}</a>{t(" for the changes to take effect.")}</p>,
@@ -56,7 +57,7 @@ function addFormulaNavBar(formulaList) {
     $(".spacewalk-content-nav").append(navBar);
 }
 
-ReactDOM.render(
+SpaRenderer.renderNavigationReact(
   <FormulaSelection
     dataUrl={"/rhn/manager/api/formulas/list/GROUP/" + groupId}
     saveRequest={saveRequest}

@@ -7,6 +7,7 @@ const {Table, Column, SearchField} = require("components/table");
 const { TopPanel } = require('components/panels/TopPanel');
 const Messages = require("components/messages").Messages;
 const Network = require("utils/network");
+const SpaRenderer  = require("core/spa/spa-renderer").default;
 
 class FormulaCatalog extends React.Component {
     constructor(props) {
@@ -76,7 +77,7 @@ class FormulaCatalog extends React.Component {
     }
 }
 
-ReactDOM.render(
+SpaRenderer.renderNavigationReact(
   <FormulaCatalog flashMessages={flashMessage()}/>,
   document.getElementById('formula-catalog')
 );

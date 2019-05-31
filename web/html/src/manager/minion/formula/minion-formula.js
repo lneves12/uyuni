@@ -3,6 +3,7 @@
 
 var React = require("react");
 const ReactDOM = require("react-dom");
+const SpaRenderer  = require("core/spa/spa-renderer").default;
 
 var Network = require("utils/network");
 var FormulaFormModule = require("components/FormulaForm");
@@ -25,7 +26,7 @@ function addFormulaNavBar(formulaList, activeId) {
     $(".spacewalk-content-nav").append(navBar);
 }
 
-ReactDOM.render(
+SpaRenderer.renderNavigationReact(
     <FormulaForm
           dataUrl={"/rhn/manager/api/formulas/form/SERVER/" + serverId + "/" + formulaId}
           saveUrl="/rhn/manager/api/formulas/save"
