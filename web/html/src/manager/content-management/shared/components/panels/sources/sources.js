@@ -16,10 +16,11 @@ import statesEnum from "../../../business/states.enum";
 type SourcesProps = {
   projectId: string,
   softwareSources: Array<ProjectSoftwareSourceType>,
+  allClmChannels: Array<number>,
   onChange: Function,
 };
 
-const ModalSourceCreationContent = ({isLoading, softwareSources, onChange}) => {
+const ModalSourceCreationContent = ({isLoading, softwareSources, allClmChannels, onChange}) => {
 
   return (
     <form className="form-horizontal">
@@ -39,6 +40,7 @@ const ModalSourceCreationContent = ({isLoading, softwareSources, onChange}) => {
             .filter(source => !statesEnum.isDeletion(source.state))
             .map(source => source.channelId)
         }
+        allClmChannels={allClmChannels}
         onChange={(selectedChannels) => {
           onChange(selectedChannels.map(c => c.label))
         }}
@@ -112,6 +114,7 @@ const Sources = (props: SourcesProps) => {
         return (
           <ModalSourceCreationContent
             softwareSources={props.softwareSources}
+            allClmChannels={props.allClmChannels}
             onChange={(channelsLabel) => {
               setItem(channelsLabel);
             }}

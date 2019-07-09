@@ -6,7 +6,7 @@ import {RolesProvider} from "core/auth/roles-context";
 window.pageRenderers = window.pageRenderers || {};
 window.pageRenderers.contentManagement = window.pageRenderers.contentManagement || {};
 window.pageRenderers.contentManagement.project = window.pageRenderers.contentManagement.project || {};
-window.pageRenderers.contentManagement.project.renderer = (id, {project, wasFreshlyCreatedMessage} = {}) => {
+window.pageRenderers.contentManagement.project.renderer = (id, {project, allClmChannels, wasFreshlyCreatedMessage} = {}) => {
   let projectJson = {};
   try{
     projectJson = JSON.parse(project);
@@ -16,6 +16,7 @@ window.pageRenderers.contentManagement.project.renderer = (id, {project, wasFres
     <RolesProvider>
       <Project
         project={projectJson}
+        allClmChannels={allClmChannels}
         { ...( wasFreshlyCreatedMessage && { wasFreshlyCreatedMessage } ) }
       />
     </RolesProvider>,

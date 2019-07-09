@@ -26,6 +26,7 @@ import filtersEnum from "../shared/business/filters.enum";
 
 type Props = {
   project: ProjectType,
+  allClmChannels: Array<number>,
   wasFreshlyCreatedMessage?: string,
 };
 
@@ -110,6 +111,7 @@ const Project = (props: Props) => {
         <Sources
           projectId={projectId}
           softwareSources={project.softwareSources}
+          allClmChannels={props.allClmChannels}
           onChange={(projectWithNewSources) => {
             setProject(projectWithNewSources);
             cancelRefreshAction();

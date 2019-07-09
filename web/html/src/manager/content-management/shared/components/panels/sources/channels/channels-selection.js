@@ -6,6 +6,7 @@ import useChannelsTreeApi from "core/channels/api/use-channels-tree-api";
 import styles from "./channels-selection.css";
 import GroupChannels from "./group-channels";
 import {useImmerReducer} from "use-immer";
+import produce from "immer";
 
 import type {ActionChannelsSelectionType, FilterType, StateChannelsSelectionType} from "./channels-selection.state";
 import {
@@ -21,6 +22,7 @@ import {getSelectedChannelsIdsInGroup} from "core/channels/utils/channels-state.
 type PropsType = {
   isSourcesApiLoading: boolean,
   initialSelectedIds: Array<number>,
+  allClmChannels: Array<number>,
   onChange: Function,
 }
 
@@ -67,9 +69,15 @@ const ChannelsSelection = (props: PropsType) => {
     search
   });
 
-  const visibleChannels = getVisibleChannels(channelsTree, state.activeFilters);
+  const channelsTreeFilteredByClmClones = produce(channelsTree, draft => {
+    draft.baseIds = draft.baseIds.filter(cId => !props.allClmChannels.includes(cId));
+    props.allClmChannels.forEach(cId => delete draft.channelsById[cId])
+    return draft;
+  })
+
+  const visibleChannels = getVisibleChannels(channelsTreeFilteredByClmClones, state.activeFilters)
   // Order all base channels by id and set the lead base channel as first
-  let orderedBaseChannels = orderBaseChannels(channelsTree, state.selectedBaseChannelId);
+  let orderedBaseChannels = orderBaseChannels(channelsTreeFilteredByClmClones, state.selectedBaseChannelId)
 
   return (
     <div>
@@ -148,7 +156,7 @@ const ChannelsSelection = (props: PropsType) => {
 
                   if(!isGroupVisible(
                     baseChannel,
-                    channelsTree,
+                    channelsTreeFilteredByClmClones,
                     visibleChannels,
                     selectedChannelsIdsInGroup,
                     state.selectedBaseChannelId,
@@ -186,7 +194,7 @@ const ChannelsSelection = (props: PropsType) => {
                         baseId: baseChannel.id,
                         open
                       })}
-                      channelsTree={channelsTree}
+                      channelsTree={channelsTreeFilteredByClmClones}
                       requiredChannelsResult={requiredChannelsResult}
                     />
                   )

@@ -107,6 +107,11 @@ public class ContentManagementViewsController {
                     project.getLabel(), user
             );
             data.put("projectToEdit", GSON.toJson(ResponseMappers.mapProjectFromDB(project, contentEnvironments)));
+            data.put("allClmChannels", GSON.toJson(
+                    ContentProjectFactory.listSoftwareEnvironmentTarget().stream()
+                        .map(target -> target.getChannel().getId())
+                        .collect(Collectors.toList())
+            ));
         });
         data.put("wasFreshlyCreatedMessage", FlashScopeHelper.flash(req));
 
