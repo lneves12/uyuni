@@ -1,3 +1,4 @@
+- Content Lifecycle sources will no longer include cloned channels by other projects (bsc#1137965)
 - Redirect to first step of channel assignment after change channel submit (bsc#1137244)
 - Allow virtualization tab for foreign systems (bsc#1116869)
 - Allow forcing off or resetting VMs

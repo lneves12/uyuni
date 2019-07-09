@@ -1,3 +1,4 @@
+- Content Lifecycle sources will no longer include cloned channels by other projects (bsc#1137965)
 - Fallback to logged-in-user org and then vendor errata when looking up erratum on cloning (bsc#1137308)
 - Add new validation to avoid creating content lifecycle projects starting with a number (bsc#1139493)
 - Allow virtualization tab for foreign systems (bsc#1116869)
