@@ -41,6 +41,7 @@ window.pageRenderers.spa.init = function init() {
       window.location = navigation.path;
     }
 
+    Loggerhead.info('[' + new Date().toUTCString() + '] - Loading `' + window.location + '`');
     SpaRenderer.onSpaEndNavigation();
     onDocumentReadyInitOldJS();
   });
