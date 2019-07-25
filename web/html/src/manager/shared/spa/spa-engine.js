@@ -57,3 +57,11 @@ window.pageRenderers.spa.navigate = function navigate(url) {
     window.location = url;
   }
 }
+
+window.pageRenderers.spa.isInTransition = function navigate() {
+  if(window.pageRenderers.spa.appInstance) {
+    return window.pageRenderers.spa.appInstance.isNavigationPending;
+  } else {
+    return false;
+  }
+}

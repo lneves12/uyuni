@@ -25,6 +25,10 @@ end
 When(/^I click on "([^"]+)" in row "([^"]+)"$/) do |link, item|
   within(:xpath, "//tr[td[contains(.,'#{item}')]]") do
     click_link_or_button(link)
+    repeat_until_timeout(timeout: 500, message: "Error on navigating to '#{text}'") do
+      break if not page.execute_script("return window.pageRenderers.spa.isInTransition()")
+      sleep 1
+    end
   end
 end
 
@@ -179,12 +183,20 @@ end
 #
 When(/^I follow "([^"]*)"$/) do |text|
   click_link(text, wait: CLICK_TIMEOUT)
+    repeat_until_timeout(timeout: 500, message: "Error on navigating to '#{text}'") do
+      break if not page.execute_script("return window.pageRenderers.spa.isInTransition()")
+      sleep 1
+    end
 end
 #
 # Click on the first link
 #
 When(/^I follow first "([^"]*)"$/) do |text|
   click_link(text, wait: CLICK_TIMEOUT, match: :first)
+    repeat_until_timeout(timeout: 500, message: "Error on navigating to '#{text}'") do
+      break if not page.execute_script("return window.pageRenderers.spa.isInTransition()")
+      sleep 1
+    end
 end
 
 #
