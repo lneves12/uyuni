@@ -5,6 +5,13 @@
 # Texts and links
 #
 
+def wait_for_spa_transition(text)
+  repeat_until_timeout(timeout: 500, message: "Error on navigating to '#{text}'") do
+    break unless page.execute_script('return window.pageRenderers.spa.isInTransition()')
+    sleep 1
+  end
+end
+
 When(/^I follow "(.*?)" link$/) do |host|
   system_name = get_system_name(host)
   step %(I follow "#{system_name}")
@@ -25,10 +32,7 @@ end
 When(/^I click on "([^"]+)" in row "([^"]+)"$/) do |link, item|
   within(:xpath, "//tr[td[contains(.,'#{item}')]]") do
     click_link_or_button(link)
-    repeat_until_timeout(timeout: 500, message: "Error on navigating to '#{text}'") do
-      break if not page.execute_script("return window.pageRenderers.spa.isInTransition()")
-      sleep 1
-    end
+    wait_for_spa_transition(link)
   end
 end
 
@@ -157,9 +161,11 @@ end
 When(/^I click on "([^"]*)"$/) do |arg1|
   begin
     click_button arg1, match: :first
+    wait_for_spa_transition(arg1)
   rescue
     sleep 4
     click_button arg1, match: :first
+    wait_for_spa_transition(arg1)
   end
 end
 #
@@ -168,6 +174,7 @@ end
 When(/^I click on "([^"]*)" in element "([^"]*)"$/) do |arg1, arg2|
   within(:xpath, "//div[@id=\"#{arg2}\"]") do
     click_button arg1, match: :first
+    wait_for_spa_transition(arg1)
   end
 end
 #
@@ -183,20 +190,14 @@ end
 #
 When(/^I follow "([^"]*)"$/) do |text|
   click_link(text, wait: CLICK_TIMEOUT)
-    repeat_until_timeout(timeout: 500, message: "Error on navigating to '#{text}'") do
-      break if not page.execute_script("return window.pageRenderers.spa.isInTransition()")
-      sleep 1
-    end
+  wait_for_spa_transition(text)
 end
 #
 # Click on the first link
 #
 When(/^I follow first "([^"]*)"$/) do |text|
   click_link(text, wait: CLICK_TIMEOUT, match: :first)
-    repeat_until_timeout(timeout: 500, message: "Error on navigating to '#{text}'") do
-      break if not page.execute_script("return window.pageRenderers.spa.isInTransition()")
-      sleep 1
-    end
+  wait_for_spa_transition(text)
 end
 
 #
@@ -285,10 +286,7 @@ When(/^I follow the left menu "([^"]*)"$/) do |menu_path|
   end
   # finally go to the target page
   find(:xpath, target_link_path).click
-  repeat_until_timeout(timeout: 500, message: "Error on navigating to '#{menu_path}'") do
-    break if not page.execute_script("return window.pageRenderers.spa.isInTransition()")
-    sleep 1
-  end
+  wait_for_spa_transition(target_link_path)
 end
 
 #
