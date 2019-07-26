@@ -285,6 +285,10 @@ When(/^I follow the left menu "([^"]*)"$/) do |menu_path|
   end
   # finally go to the target page
   find(:xpath, target_link_path).click
+  repeat_until_timeout(timeout: 500, message: "Error on navigating to '#{menu_path}'") do
+    break if not page.execute_script("return window.pageRenderers.spa.isInTransition()")
+    sleep 1
+  end
 end
 
 #
