@@ -648,6 +648,7 @@ public class ToolbarTag extends TagSupport {
 
         HtmlTag a = new HtmlTag("a");
         a.setAttribute("href", url);
+        a.setAttribute("class", "js-spa");
 
         if (assertNotEmpty(imgName)) {
             alt = LocalizationService.getInstance().getMessage(alt);
