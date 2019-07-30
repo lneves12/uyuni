@@ -9,7 +9,7 @@ function closeDialog(modalId: string) {
   return closeModalPromise;
 }
 
-function Dialog(props) {
+function <(props) {
   const {onClosePopUp, buttons, ...OtherProps} = props;
 
   React.useEffect(() => {
