@@ -3,7 +3,7 @@
 
 const React = require("react");
 
-const Messages = require("../components/messages").Messages;
+const Messages = require("./messages").Messages;
 const Network = require("../utils/network");
 const Buttons = require("../components/buttons");
 

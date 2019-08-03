@@ -8,8 +8,8 @@ const { InnerPanel } = require('components/panels/InnerPanel');
 const { PanelRow } = require('components/panels/PanelRow');
 const Fields = require("../components/fields");
 const PopUp = require("../components/popup").PopUp;
-const Messages = require("../components/messages").Messages;
-const MessagesUtils = require("../components/messages").Utils;
+const Messages = require("./messages").Messages;
+const MessagesUtils = require("./messages").Utils;
 const Network = require("../utils/network");
 
 const AsyncButton = Buttons.AsyncButton;

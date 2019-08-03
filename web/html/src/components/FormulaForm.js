@@ -3,7 +3,7 @@ const React = require("react");
 const Network = require("../utils/network");
 const Functions = require("../utils/functions");
 const Buttons = require("../components/buttons");
-const Messages = require("../components/messages").Messages;
+const Messages = require("./messages").Messages;
 const generateFormulaComponent = require("./formulas/FormulaComponentGenerator").generateFormulaComponent;
 
 const Button = Buttons.Button;
