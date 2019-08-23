@@ -11,6 +11,8 @@ window.pageRenderers.spa = window.pageRenderers.spa || {};
 
 window.pageRenderers.spa.globalRenderersToUpdate = window.pageRenderers.spa.globalRenderersToUpdate || [];
 window.pageRenderers.spa.navigationRenderersToClean = window.pageRenderers.spa.navigationRenderersToClean || [];
+// review naming: Temp removing?
+window.pageRenderers.spa.globalRenderersToRemove = window.pageRenderers.spa.globalRenderersToRemove || [];
 
 function renderGlobalReact(element: ReactElement<any>, container: Element) {
 
@@ -29,11 +31,14 @@ function renderNavigationReact(element: ReactElement<any>, container: Element) {
       ReactDOM.unmountComponentAtNode(container)
     }
   });
-  ReactDOM.render(element, container, () => onDocumentReadyInitOldJS());
+  ReactDOM.render(element, container, () => {
+    window.pageRenderers.resolvers  && window.pageRenderers.resolvers();
+    onDocumentReadyInitOldJS()
+  });
 }
 
 function cleanOldReactTrees() {
-  window.pageRenderers.spa.navigationRenderersToClean.forEach(
+  window.pageRenderers.spa.globalRenderersToRemove.forEach(
     navigationRenderer => {
       try {
         navigationRenderer.clean()
@@ -42,7 +47,7 @@ function cleanOldReactTrees() {
       }
     }
   );
-  window.pageRenderers.spa.navigationRenderersToClean = [];
+  window.pageRenderers.spa.globalRenderersToRemove = [];
 }
 
 function onSpaEndNavigation() {

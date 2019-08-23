@@ -1,8 +1,12 @@
 /* global onDocumentReadyInitOldJS, Loggerhead */
 import App, {HtmlScreen} from "senna";
+import Surface from "senna/lib/surface/Surface";
 import "senna/build/senna.css"
 import "./spa-engine.css"
 import SpaRenderer from "core/spa/spa-renderer";
+import CancellablePromise from 'metal-promise';
+import { exitDocument } from 'metal-dom';
+import _isEmpty from 'lodash/isEmpty';
 
 function isLoginPage (pathName) {
   const allLoginPossiblePaths = ["/", "/rhn/Login.do", "/rhn/Login2.do", "/manager/login", "/rhn/ReLogin.do"];
@@ -18,7 +22,38 @@ window.pageRenderers.spa.init = function init() {
     const appInstance = new App();
     // appInstance.setLinkSelector("a.js-spa");
     appInstance.setFormSelector("form.js-spa");
-    appInstance.addSurfaces(["left-menu-data", "ssm-box", "page-body"])
+
+    const pageBodySurface = new Surface("page-body");
+    pageBodySurface.show = function (screenId) {
+        let from = pageBodySurface.activeChild;
+        let to = pageBodySurface.getChild(screenId);
+        if (!to) {
+          to = pageBodySurface.defaultChild;
+        }
+        this.activeChild = to;
+
+        const onResolve = function() {
+          window.pageRenderers.resolvers = () => {
+            if (from) {
+              from.style.display = 'none';
+              from.classList.remove('flipped');
+            }
+            if (to) {
+              to.style.display = 'block';
+              to.classList.add('flipped');
+            }
+            if (from && from !== to) {
+              exitDocument(from);
+            }
+            SpaRenderer.cleanOldReactTrees();
+          }
+        };
+
+        return CancellablePromise.resolve(onResolve())
+    }
+    pageBodySurface.remove = function () {};
+
+    appInstance.addSurfaces(["left-menu-data", "ssm-box", pageBodySurface])
     appInstance.addRoutes([{
       path: /.*/,
       handler: function (route, a, b) {
@@ -36,9 +71,11 @@ window.pageRenderers.spa.init = function init() {
           }
           return body;
         }
-        screen.deactivate = function() {
-          SpaRenderer.cleanOldReactTrees();
-        }
+        screen.beforeActivate = function() {
+          window.pageRenderers.spa.globalRenderersToRemove = window.pageRenderers.spa.navigationRenderersToClean;
+          window.pageRenderers.spa.navigationRenderersToClean = [];
+        };
+
         return screen;
       }
     }]);
@@ -61,7 +98,9 @@ window.pageRenderers.spa.init = function init() {
         document.getElementsByClassName("spacewalk-main-column-layout")[0].innerHTML = `
         <div class="container-fluid">
             <div class="alert alert-danger">
-                No session. Redirecting to login page...
+                No session. Redirecting to login page...          if(_isEmpty(window.pageRenderers.spa.navigationRenderersToClean)) {
+            window.pageRenderers.resolvers  && window.pageRenderers.resolvers();
+          }
             </div>
         </div>
       `;
@@ -78,6 +117,11 @@ window.pageRenderers.spa.init = function init() {
       Loggerhead.info('[' + new Date().toUTCString() + '] - Loading `' + window.location + '`');
       SpaRenderer.onSpaEndNavigation();
       onDocumentReadyInitOldJS();
+      // if(_isEmpty(window.pageRenderers.spa.navigationRenderersToClean)) {
+      //   window.pageRenderers.resolvers  && window.pageRenderers.resolvers();
+      // }
+      // endNavigate not called in the end.............
+      // clean now
     });
 
     return appInstance;
